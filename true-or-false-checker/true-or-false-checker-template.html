@@ -16,8 +16,8 @@
       --card-border: #0f3460;       /* Card border (default) */
       --text-color: #e0e0e0;        /* Main text colour */
       --heading-color: #e94560;     /* Title and accent colour */
-      --true-color: #4caf50;        /* Correct answer — green */
-      --false-color: #e94560;       /* Wrong answer — red */
+      --true-color: #4caf50;        /* Correct answer (green) */
+      --false-color: #e94560;       /* Wrong answer (red) */
       --btn-true-bg: #2d6a4f;       /* "True" button colour */
       --btn-false-bg: #6b2737;      /* "False" button colour */
       --font-family: 'Segoe UI', sans-serif; /* Text font */
@@ -244,7 +244,7 @@
   <header>
     <!-- CHANGE THIS: update the title and subtitle to match your topic -->
     <h1>True or False?</h1>
-    <p class="subtitle">General Knowledge &mdash; click True or False for each statement</p>
+    <p class="subtitle">General Knowledge: click True or False for each statement</p>
   </header>
 
   <div class="quiz-container" id="quiz-container">
@@ -253,8 +253,8 @@
       =====================================================
       STATEMENT CARDS
       Each card needs:
-        data-answer="true"  — if the statement is TRUE
-        data-answer="false" — if the statement is FALSE
+        data-answer="true"  for a TRUE statement
+        data-answer="false" for a FALSE statement
       =====================================================
     -->
 
@@ -267,7 +267,7 @@
         <button class="btn-false">False</button>
       </div>
       <p class="feedback"></p>
-      <p class="explanation">This is a common myth — the wall is far too narrow to see from space without optical aid.</p>
+      <p class="explanation">This is a common myth. The wall is far too narrow to see from space without optical aid.</p>
     </div>
 
     <!-- Statement 2 — TRUE -->
@@ -279,7 +279,7 @@
         <button class="btn-false">False</button>
       </div>
       <p class="feedback"></p>
-      <p class="explanation">True &mdash; at standard atmospheric pressure, water boils at exactly 100&deg;C (212&deg;F). At higher altitudes, it boils at a lower temperature.</p>
+      <p class="explanation">True. At standard atmospheric pressure, water boils at exactly 100&deg;C (212&deg;F). At higher altitudes, it boils at a lower temperature.</p>
     </div>
 
     <!-- Statement 3 — TRUE -->
@@ -291,7 +291,7 @@
         <button class="btn-false">False</button>
       </div>
       <p class="feedback"></p>
-      <p class="explanation">True &mdash; sharks are cartilaginous fish. Dolphins and whales look similar but are mammals; sharks are not.</p>
+      <p class="explanation">True. Sharks are cartilaginous fish. Dolphins and whales look similar but are mammals; sharks are not.</p>
     </div>
 
     <!-- Statement 4 — FALSE (myth) -->
@@ -303,7 +303,7 @@
         <button class="btn-false">False</button>
       </div>
       <p class="feedback"></p>
-      <p class="explanation">False &mdash; brain scans show we use virtually all of our brain, and most areas are active at some point during the day.</p>
+      <p class="explanation">False. Brain scans show we use virtually all of our brain, and most areas are active at some point during the day.</p>
     </div>
 
     <!-- Statement 5 — TRUE -->
@@ -315,7 +315,7 @@
         <button class="btn-false">False</button>
       </div>
       <p class="feedback"></p>
-      <p class="explanation">True &mdash; tall structures like lightning rods and skyscrapers are struck repeatedly during the same storm.</p>
+      <p class="explanation">True. Tall structures like lightning rods and skyscrapers are struck repeatedly during the same storm.</p>
     </div>
 
     <!--
@@ -369,7 +369,7 @@
         } else if (score >= totalQuestions / 2) {
           label.textContent = 'Good work! Review any you missed.';
         } else {
-          label.textContent = 'Keep practising — review the explanations above.';
+          label.textContent = 'Keep practising. Review the explanations above.';
         }
       } else {
         label.textContent = answered + ' of ' + totalQuestions + ' answered';
@@ -413,7 +413,7 @@
       } else {
         card.classList.add('incorrect');
         var correctWord = correct.charAt(0).toUpperCase() + correct.slice(1);
-        feedbackEl.textContent = 'Incorrect \u2014 the answer is ' + correctWord + '.';
+        feedbackEl.textContent = 'Incorrect. The answer is ' + correctWord + '.';
         feedbackEl.className = 'feedback incorrect-msg';
       }
 

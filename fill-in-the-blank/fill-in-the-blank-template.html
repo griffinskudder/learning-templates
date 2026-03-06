@@ -6,14 +6,14 @@
   <title>Fill in the Blank</title>
   <style>
     /* ============================================================
-       CUSTOMIZATION ZONE — edit these variables to theme your quiz
+       CUSTOMISATION ZONE — edit these variables to theme your quiz
        ============================================================ */
     :root {
       --bg-color:         #1a1a2e;  /* page background */
       --card-bg:          #16213e;  /* sentence card background */
-      --card-border:      #0f3460;  /* card border color */
-      --accent:           #e94560;  /* heading accent / button color */
-      --accent-hover:     #c73652;  /* button hover color */
+      --card-border:      #0f3460;  /* card border colour */
+      --accent:           #e94560;  /* heading accent / button colour */
+      --accent-hover:     #c73652;  /* button hover colour */
       --text-color:       #eaeaea;  /* main body text */
       --muted-text:       #8892a4;  /* secondary / hint text */
       --input-bg:         #0f3460;  /* blank input background */
@@ -281,7 +281,7 @@
        ============================================================ -->
   <header>
     <h1>Fill in the Blank</h1>
-    <p class="subtitle">Science — States of Matter</p>
+    <p class="subtitle">Science: States of Matter</p>
   </header>
 
   <!-- ============================================================
@@ -290,7 +290,7 @@
        you are ready to share the quiz with students.
        ============================================================ -->
   <div class="instructions">
-    <strong>Setup Guide — delete this box before sharing</strong>
+    <strong>Setup Guide (delete this box before sharing)</strong>
     <ol>
       <li>Change the <code>&lt;h1&gt;</code> to your quiz title and the subtitle to your topic.</li>
       <li>Edit the five <code>.sentence-card</code> blocks below with your own sentences.</li>
@@ -439,11 +439,11 @@
       scoreText.textContent = "You got " + correct + " / " + total + " correct!";
 
       if (correct === total) {
-        scoreNote.textContent = "Excellent work — full marks!";
+        scoreNote.textContent = "Excellent work! Full marks!";
       } else if (correct >= Math.ceil(total / 2)) {
-        scoreNote.textContent = "Good effort — review the highlighted answers and try again.";
+        scoreNote.textContent = "Good effort. Review the highlighted answers and try again.";
       } else {
-        scoreNote.textContent = "Keep practising — read each sentence carefully and try again.";
+        scoreNote.textContent = "Keep practising. Read each sentence carefully and try again.";
       }
 
       scoreDisplay.classList.add("visible");

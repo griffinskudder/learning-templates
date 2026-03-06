@@ -1,0 +1,699 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Match the Pairs</title>
+  <style>
+    /* ============================================
+       CUSTOMIZATION ZONE
+       Change these variables to restyle the activity
+    ============================================ */
+    :root {
+      --bg-color:        #0f1117;   /* Page background */
+      --surface-color:   #1a1d2e;   /* Card/panel background */
+      --border-color:    #2d3154;   /* Card borders */
+      --accent-color:    #6c63ff;   /* Highlight / active colour */
+      --text-color:      #e8eaf6;   /* Main text */
+      --muted-color:     #8892b0;   /* Hints, labels */
+      --correct-color:   #4caf50;   /* Correct answer highlight */
+      --incorrect-color: #f44336;   /* Incorrect answer highlight */
+      --font-main:       'Segoe UI', system-ui, sans-serif; /* Body font */
+      --font-heading:    'Segoe UI', system-ui, sans-serif; /* Heading font */
+      --card-radius:     10px;      /* Rounded corners */
+    }
+    /* ============================================
+       END CUSTOMIZATION ZONE
+    ============================================ */
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--bg-color);
+      color: var(--text-color);
+      font-family: var(--font-main);
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    /* ---- Setup banner (students delete this whole block) ---- */
+    .setup-banner {
+      background: #1e3a5f;
+      border: 2px dashed #4a9eff;
+      border-radius: var(--card-radius);
+      padding: 16px 20px;
+      margin-bottom: 24px;
+      font-size: 0.9rem;
+      line-height: 1.8;
+    }
+    .setup-banner h2  { color: #4a9eff; margin-bottom: 8px; font-size: 1rem; }
+    .setup-banner code { background: #0a1929; padding: 2px 6px; border-radius: 4px; font-size: 0.85rem; }
+    .setup-banner .delete-note { color: #ff9800; font-weight: bold; margin-top: 8px; display: block; }
+
+    /* ---- Header ---- */
+    header { text-align: center; margin-bottom: 24px; }
+    header h1 {
+      font-family: var(--font-heading);
+      font-size: 2rem;
+      color: var(--accent-color);
+      margin-bottom: 6px;
+    }
+    header p.subtitle { color: var(--muted-color); font-size: 1rem; }
+
+    /* ---- Mode toggle ---- */
+    .mode-toggle {
+      display: flex;
+      justify-content: center;
+      gap: 12px;
+      margin-bottom: 28px;
+    }
+    .mode-btn {
+      padding: 10px 24px;
+      border-radius: 30px;
+      border: 2px solid var(--border-color);
+      background: var(--surface-color);
+      color: var(--muted-color);
+      font-size: 0.95rem;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .mode-btn.active {
+      border-color: var(--accent-color);
+      color: var(--accent-color);
+      background: rgba(108, 99, 255, 0.12);
+    }
+    .mode-btn:hover:not(.active) {
+      border-color: var(--muted-color);
+      color: var(--text-color);
+    }
+
+    /* ---- Game area grid ---- */
+    .game-area {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      max-width: 900px;
+      margin: 0 auto 24px;
+    }
+    @media (max-width: 600px) {
+      .game-area { grid-template-columns: 1fr; }
+    }
+
+    /* ---- Column labels ---- */
+    .col-label {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: var(--muted-color);
+      margin-bottom: 6px;
+    }
+
+    /* ---- Term bank (drag mode) ---- */
+    .term-bank { display: flex; flex-direction: column; gap: 10px; }
+
+    .term-card {
+      background: var(--surface-color);
+      border: 2px solid var(--border-color);
+      border-radius: var(--card-radius);
+      padding: 14px 18px;
+      cursor: grab;
+      font-size: 1rem;
+      font-weight: 600;
+      color: var(--text-color);
+      user-select: none;
+      transition: all 0.18s;
+    }
+    .term-card:hover {
+      border-color: var(--accent-color);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 16px rgba(108, 99, 255, 0.22);
+    }
+    .term-card.dragging { opacity: 0.35; cursor: grabbing; }
+    .term-card.placed   { opacity: 0.3; pointer-events: none; }
+
+    /* ---- Definition / drop-zone cards ---- */
+    .def-column { display: flex; flex-direction: column; gap: 10px; }
+
+    .pair-card {
+      background: var(--surface-color);
+      border: 2px solid var(--border-color);
+      border-radius: var(--card-radius);
+      padding: 14px 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      transition: border-color 0.2s;
+    }
+    .pair-card.correct   { border-color: var(--correct-color); }
+    .pair-card.incorrect { border-color: var(--incorrect-color); }
+
+    /* Image inside a pair card */
+    .def-image {
+      width: 100%;
+      max-height: 130px;
+      object-fit: cover;
+      border-radius: 6px;
+      display: block;
+    }
+
+    .def-text {
+      color: var(--text-color);
+      font-size: 0.95rem;
+      line-height: 1.5;
+    }
+
+    /* Drop zone */
+    .drop-zone {
+      border: 2px dashed var(--border-color);
+      border-radius: 8px;
+      padding: 10px 14px;
+      min-height: 44px;
+      color: var(--muted-color);
+      font-size: 0.9rem;
+      transition: all 0.18s;
+      display: flex;
+      align-items: center;
+    }
+    .drop-zone.drag-over {
+      border-color: var(--accent-color);
+      background: rgba(108, 99, 255, 0.1);
+      color: var(--text-color);
+    }
+    .drop-zone.filled {
+      border-color: var(--accent-color);
+      background: rgba(108, 99, 255, 0.08);
+      color: var(--text-color);
+      font-weight: 600;
+      justify-content: space-between;
+    }
+    .remove-btn {
+      background: none;
+      border: none;
+      color: var(--muted-color);
+      cursor: pointer;
+      font-size: 1.1rem;
+      padding: 0 4px;
+      line-height: 1;
+      flex-shrink: 0;
+    }
+    .remove-btn:hover { color: var(--incorrect-color); }
+
+    /* ---- Dropdown mode ---- */
+    .pair-card select {
+      width: 100%;
+      padding: 10px 36px 10px 14px;
+      background: var(--bg-color);
+      color: var(--text-color);
+      border: 2px solid var(--border-color);
+      border-radius: 8px;
+      font-size: 0.95rem;
+      cursor: pointer;
+      appearance: none;
+      -webkit-appearance: none;
+      /* Custom chevron arrow */
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%238892b0' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 12px center;
+      transition: border-color 0.18s;
+    }
+    .pair-card select:focus {
+      outline: none;
+      border-color: var(--accent-color);
+    }
+
+    /* ---- Controls ---- */
+    .controls {
+      display: flex;
+      justify-content: center;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+    .btn {
+      padding: 12px 32px;
+      border-radius: 30px;
+      border: none;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.18s;
+    }
+    .btn-primary {
+      background: var(--accent-color);
+      color: #fff;
+    }
+    .btn-primary:hover {
+      background: #5a52e0;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 16px rgba(108, 99, 255, 0.4);
+    }
+    .btn-secondary {
+      background: var(--surface-color);
+      color: var(--muted-color);
+      border: 2px solid var(--border-color);
+    }
+    .btn-secondary:hover {
+      border-color: var(--muted-color);
+      color: var(--text-color);
+    }
+
+    /* ---- Score display ---- */
+    .score-display {
+      text-align: center;
+      font-size: 1.15rem;
+      font-weight: 700;
+      min-height: 2rem;
+    }
+    .score-display .hi { color: var(--accent-color); }
+  </style>
+</head>
+<body>
+
+<!-- ============================================================
+     SETUP INSTRUCTIONS - Delete this entire block when you're done!
+============================================================ -->
+<div class="setup-banner">
+  <h2>Student Setup Guide - Delete this section when finished!</h2>
+  <p><strong>Step 1 - Title:</strong> Find <code>var TITLE</code> and <code>var SUBTITLE</code> near the top of the &lt;script&gt;. Change them to your topic.</p>
+  <p><strong>Step 2 - Pairs:</strong> Find the <code>var pairs</code> array. Replace the examples with your own terms and definitions. Each entry looks like:</p>
+  <p><code>{ term: "Your Term", definition: "Your definition here.", image: "" }</code></p>
+  <p><strong>Step 3 - Images (optional):</strong> To show an image instead of (or alongside) a definition, put the image filename in the <code>image</code> field, e.g. <code>image: "erosion.jpg"</code>. The image file must be in the same folder as this HTML file. Leave it as <code>""</code> for text-only pairs.</p>
+  <p><strong>Step 4 - Colours:</strong> Change the CSS variables in the <code>CUSTOMIZATION ZONE</code> at the top of the &lt;style&gt; block.</p>
+  <span class="delete-note">Delete this entire &lt;div class="setup-banner"&gt;...&lt;/div&gt; block before handing in!</span>
+</div>
+<!-- ============================================================
+     END SETUP INSTRUCTIONS
+============================================================ -->
+
+<header>
+  <h1 id="activity-title">Match the Pairs</h1>
+  <p class="subtitle" id="activity-subtitle">Drag each term to its matching definition.</p>
+</header>
+
+<div class="mode-toggle">
+  <button class="mode-btn active" id="btn-drag"     onclick="setMode('drag')">Drag &amp; Drop</button>
+  <button class="mode-btn"        id="btn-dropdown" onclick="setMode('dropdown')">Dropdown</button>
+</div>
+
+<div class="game-area" id="game-area">
+  <!-- Built by JavaScript -->
+</div>
+
+<div class="controls">
+  <button class="btn btn-secondary" onclick="resetActivity()">Reset</button>
+  <button class="btn btn-primary"   onclick="checkAnswers()">Check Answers</button>
+</div>
+
+<div class="score-display" id="score-display"></div>
+
+<script>
+/* ============================================================
+   CUSTOMISE YOUR ACTIVITY HERE
+============================================================ */
+
+/* Change the title and subtitle text */
+var TITLE    = "Match the Pairs";
+var SUBTITLE = "Drag each term to its matching definition — or switch to Dropdown mode.";
+
+/* Add your pairs below.
+   - term:       The word or concept students need to match.
+   - definition: The clue or explanation they are matching TO.
+   - image:      Optional image filename (e.g. "erosion.jpg").
+                 The file must be in the same folder as this HTML.
+                 Leave as "" for text-only pairs.
+
+   Aim for 4-8 pairs. Copy and paste to add more. */
+var pairs = [
+  { term: "Weathering",   definition: "The breaking down of rock in place by water, wind, or chemicals.", image: "" },
+  { term: "Erosion",      definition: "The movement of broken rock or sediment from one place to another.", image: "" },
+  { term: "Deposition",   definition: "The dropping of sediment in a new location after transport.", image: "" },
+  { term: "Colonisation", definition: "The settlement and control of a new land by people from another country.", image: "" },
+  { term: "Convict",      definition: "A person found guilty of a crime and sent to a colony as punishment.", image: "" },
+  { term: "Federation",   definition: "The joining of separate colonies or states into one nation.", image: "" }
+];
+
+/* ADD MORE PAIRS HERE - copy the line below and paste it above the ]; */
+/* { term: "New Term", definition: "Your definition here.", image: "" }, */
+
+/* ============================================================
+   END OF CUSTOMISATION
+   Do not edit below this line unless you are confident with JS!
+============================================================ */
+
+/* Apply title and subtitle */
+document.getElementById('activity-title').textContent    = TITLE;
+document.getElementById('activity-subtitle').textContent = SUBTITLE;
+
+/* --- State --- */
+var currentMode      = 'drag';  /* 'drag' or 'dropdown' */
+var shuffledDefOrder = [];      /* Shuffled indices into pairs[] for the right column */
+var shuffledTermOrder = [];     /* Shuffled indices into pairs[] for the left column */
+var placements       = {};      /* placements[defIdx] = termIdx placed there */
+var draggedTermIdx   = null;    /* Index of the term currently being dragged */
+
+/* --- Utility: Fisher-Yates shuffle --- */
+function shuffle(arr) {
+  var a = arr.slice();
+  for (var i = a.length - 1; i > 0; i--) {
+    var j = Math.floor(Math.random() * (i + 1));
+    var t = a[i]; a[i] = a[j]; a[j] = t;
+  }
+  return a;
+}
+
+/* Build a fresh index array [0, 1, 2, ...] */
+function range(n) {
+  var a = [];
+  for (var i = 0; i < n; i++) a.push(i);
+  return a;
+}
+
+/* --- Initialise / reset --- */
+function init() {
+  placements      = {};
+  draggedTermIdx  = null;
+  document.getElementById('score-display').textContent = '';
+
+  /* Shuffle the display order independently */
+  shuffledDefOrder  = shuffle(range(pairs.length));
+  shuffledTermOrder = shuffle(range(pairs.length));
+
+  if (currentMode === 'drag') {
+    renderDragMode();
+  } else {
+    renderDropdownMode();
+  }
+}
+
+/* ======================================================
+   DRAG & DROP MODE
+====================================================== */
+function renderDragMode() {
+  var area = document.getElementById('game-area');
+  area.innerHTML = '';
+
+  /* -- Left column: term bank -- */
+  var termBank = document.createElement('div');
+  termBank.className = 'term-bank';
+
+  var termLabel = document.createElement('div');
+  termLabel.className = 'col-label';
+  termLabel.textContent = 'Terms';
+  termBank.appendChild(termLabel);
+
+  shuffledTermOrder.forEach(function(pairIdx) {
+    var card = document.createElement('div');
+    card.className       = 'term-card';
+    card.textContent     = pairs[pairIdx].term;
+    card.draggable       = true;
+    card.dataset.pairIdx = pairIdx;
+
+    card.addEventListener('dragstart', function() {
+      draggedTermIdx = pairIdx;
+      /* Small delay so the ghost image renders before opacity changes */
+      setTimeout(function() { card.classList.add('dragging'); }, 0);
+    });
+    card.addEventListener('dragend', function() {
+      card.classList.remove('dragging');
+    });
+
+    termBank.appendChild(card);
+  });
+
+  /* -- Right column: definition cards with drop zones -- */
+  var defCol = document.createElement('div');
+  defCol.className = 'def-column';
+
+  var defLabel = document.createElement('div');
+  defLabel.className = 'col-label';
+  defLabel.textContent = 'Definitions';
+  defCol.appendChild(defLabel);
+
+  shuffledDefOrder.forEach(function(pairIdx) {
+    var pair = pairs[pairIdx];
+
+    var card = document.createElement('div');
+    card.className       = 'pair-card';
+    card.dataset.defIdx  = pairIdx;
+
+    /* Optional image */
+    if (pair.image) {
+      var img    = document.createElement('img');
+      img.src    = pair.image;
+      img.alt    = pair.term;
+      img.className = 'def-image';
+      card.appendChild(img);
+    }
+
+    /* Definition text */
+    if (pair.definition) {
+      var defText       = document.createElement('div');
+      defText.className = 'def-text';
+      defText.textContent = pair.definition;
+      card.appendChild(defText);
+    }
+
+    /* Drop zone */
+    var zone          = document.createElement('div');
+    zone.className    = 'drop-zone';
+    zone.textContent  = 'Drop term here...';
+    zone.dataset.defIdx = pairIdx;
+
+    zone.addEventListener('dragover', function(e) {
+      e.preventDefault();
+      zone.classList.add('drag-over');
+    });
+    zone.addEventListener('dragleave', function() {
+      zone.classList.remove('drag-over');
+    });
+    zone.addEventListener('drop', function(e) {
+      e.preventDefault();
+      zone.classList.remove('drag-over');
+      if (draggedTermIdx === null) return;
+
+      /* If this zone already has a term, unplace it */
+      if (placements[pairIdx] !== undefined) {
+        markTermPlaced(placements[pairIdx], false);
+      }
+
+      /* If the dragged term was already placed elsewhere, clear that zone */
+      for (var key in placements) {
+        if (placements[key] === draggedTermIdx) {
+          clearZoneByDefIdx(parseInt(key));
+          delete placements[key];
+          break;
+        }
+      }
+
+      /* Place term */
+      placements[pairIdx] = draggedTermIdx;
+      markTermPlaced(draggedTermIdx, true);
+      fillZone(zone, draggedTermIdx, pairIdx);
+      draggedTermIdx = null;
+
+      card.classList.remove('correct', 'incorrect');
+      document.getElementById('score-display').textContent = '';
+    });
+
+    card.appendChild(zone);
+    defCol.appendChild(card);
+  });
+
+  area.appendChild(termBank);
+  area.appendChild(defCol);
+}
+
+/* Add or remove the 'placed' class from a term card */
+function markTermPlaced(termIdx, placed) {
+  var cards = document.querySelectorAll('.term-card');
+  for (var i = 0; i < cards.length; i++) {
+    if (parseInt(cards[i].dataset.pairIdx) === termIdx) {
+      if (placed) cards[i].classList.add('placed');
+      else        cards[i].classList.remove('placed');
+    }
+  }
+}
+
+/* Fill a drop zone with the placed term label and a remove button */
+function fillZone(zone, termIdx, defIdx) {
+  zone.classList.add('filled');
+  zone.innerHTML = '';
+
+  var label       = document.createElement('span');
+  label.textContent = pairs[termIdx].term;
+  zone.appendChild(label);
+
+  var btn   = document.createElement('button');
+  btn.className   = 'remove-btn';
+  btn.textContent = 'x';
+  btn.title       = 'Remove';
+  btn.onclick = function() {
+    delete placements[defIdx];
+    markTermPlaced(termIdx, false);
+    zone.classList.remove('filled');
+    zone.textContent = 'Drop term here...';
+    var parentCard = zone.parentElement;
+    if (parentCard) parentCard.classList.remove('correct', 'incorrect');
+    document.getElementById('score-display').textContent = '';
+  };
+  zone.appendChild(btn);
+}
+
+/* Reset a drop zone back to its empty state by defIdx */
+function clearZoneByDefIdx(defIdx) {
+  var zones = document.querySelectorAll('.drop-zone');
+  for (var i = 0; i < zones.length; i++) {
+    if (parseInt(zones[i].dataset.defIdx) === defIdx) {
+      zones[i].classList.remove('filled', 'drag-over');
+      zones[i].textContent = 'Drop term here...';
+      break;
+    }
+  }
+}
+
+/* ======================================================
+   DROPDOWN MODE
+====================================================== */
+function renderDropdownMode() {
+  var area = document.getElementById('game-area');
+  area.innerHTML = '';
+
+  /* Single column spanning the full grid */
+  var defCol = document.createElement('div');
+  defCol.className          = 'def-column';
+  defCol.style.gridColumn   = '1 / -1';
+  defCol.style.maxWidth     = '600px';
+  defCol.style.margin       = '0 auto';
+  defCol.style.width        = '100%';
+
+  var label       = document.createElement('div');
+  label.className = 'col-label';
+  label.textContent = 'Select the correct term for each definition';
+  defCol.appendChild(label);
+
+  shuffledDefOrder.forEach(function(pairIdx) {
+    var pair = pairs[pairIdx];
+
+    var card = document.createElement('div');
+    card.className      = 'pair-card';
+    card.dataset.defIdx = pairIdx;
+
+    /* If image + definition, show side by side */
+    if (pair.image) {
+      card.style.display             = 'grid';
+      card.style.gridTemplateColumns = '110px 1fr';
+      card.style.gap                 = '14px';
+      card.style.alignItems          = 'center';
+
+      var img    = document.createElement('img');
+      img.src    = pair.image;
+      img.alt    = pair.term;
+      img.className  = 'def-image';
+      img.style.height     = '80px';
+      img.style.width      = '110px';
+      img.style.objectFit  = 'cover';
+      img.style.borderRadius = '6px';
+      card.appendChild(img);
+    }
+
+    var right             = document.createElement('div');
+    right.style.display   = 'flex';
+    right.style.flexDirection = 'column';
+    right.style.gap       = '8px';
+
+    if (pair.definition) {
+      var defText           = document.createElement('div');
+      defText.className     = 'def-text';
+      defText.textContent   = pair.definition;
+      right.appendChild(defText);
+    }
+
+    /* Build the select element */
+    var select            = document.createElement('select');
+    select.dataset.defIdx = pairIdx;
+
+    var placeholder       = document.createElement('option');
+    placeholder.value     = '';
+    placeholder.textContent = '-- Select a term --';
+    select.appendChild(placeholder);
+
+    shuffledTermOrder.forEach(function(termIdx) {
+      var opt         = document.createElement('option');
+      opt.value       = termIdx;
+      opt.textContent = pairs[termIdx].term;
+      select.appendChild(opt);
+    });
+
+    select.addEventListener('change', function() {
+      card.classList.remove('correct', 'incorrect');
+      document.getElementById('score-display').textContent = '';
+    });
+
+    right.appendChild(select);
+    card.appendChild(right);
+    defCol.appendChild(card);
+  });
+
+  area.appendChild(defCol);
+}
+
+/* ======================================================
+   CHECK ANSWERS
+====================================================== */
+function checkAnswers() {
+  var correct = 0;
+  var total   = pairs.length;
+
+  if (currentMode === 'drag') {
+    var cards = document.querySelectorAll('.pair-card');
+    cards.forEach(function(card) {
+      var defIdx      = parseInt(card.dataset.defIdx);
+      var placedTerm  = placements[defIdx];
+      card.classList.remove('correct', 'incorrect');
+      if (placedTerm !== undefined && placedTerm === defIdx) {
+        card.classList.add('correct');
+        correct++;
+      } else {
+        card.classList.add('incorrect');
+      }
+    });
+  } else {
+    var selects = document.querySelectorAll('select[data-def-idx]');
+    selects.forEach(function(sel) {
+      var defIdx      = parseInt(sel.dataset.defIdx);
+      var selected    = parseInt(sel.value);
+      var card        = sel.closest('.pair-card');
+      card.classList.remove('correct', 'incorrect');
+      if (!isNaN(selected) && selected === defIdx) {
+        card.classList.add('correct');
+        correct++;
+      } else {
+        card.classList.add('incorrect');
+      }
+    });
+  }
+
+  var display = document.getElementById('score-display');
+  if (correct === total) {
+    display.innerHTML = 'Perfect! <span class="hi">' + correct + ' / ' + total + '</span> correct!';
+  } else {
+    display.innerHTML = 'You got <span class="hi">' + correct + ' / ' + total + '</span> correct. Try again!';
+  }
+}
+
+/* ======================================================
+   RESET + MODE SWITCH
+====================================================== */
+function resetActivity() { init(); }
+
+function setMode(mode) {
+  currentMode = mode;
+  document.getElementById('btn-drag').classList.toggle('active',     mode === 'drag');
+  document.getElementById('btn-dropdown').classList.toggle('active', mode === 'dropdown');
+  init();
+}
+
+/* Start the activity */
+init();
+</script>
+</body>
+</html>

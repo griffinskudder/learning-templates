@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- STUDENT: Change this to match your topic -->
+  <title>Bug Hunt – The Water Cycle</title>
+  <style>
+    /* ============================================================
+       CUSTOMIZATION ZONE
+       Edit the values below to change the look of your page.
+    ============================================================ */
+    :root {
+      --bg-color: #0f1117;           /* Page background */
+      --surface-color: #1c1f2b;      /* Content card background */
+      --border-color: #2e3248;       /* Card border color */
+      --text-color: #dde1f0;         /* Main body text */
+      --heading-color: #ffffff;      /* Heading text */
+      --accent-color: #5b8dee;       /* Highlight / link color */
+      --accent-hover: #789ef5;       /* Hover state for accent */
+      --popup-bg: #252940;           /* Bonus fact popup background */
+      --popup-border: #5b8dee;       /* Bonus fact popup border */
+      --counter-bg: #1c1f2b;         /* Bug counter background */
+      --bug-opacity: 0.25;           /* How hidden the bugs are (0 = invisible, 1 = obvious) */
+      --font-body: Georgia, 'Times New Roman', serif;   /* Body / paragraph font */
+      --font-ui: 'Segoe UI', Arial, sans-serif;         /* UI elements font */
+    }
+    /* ============================================================ */
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      font-family: var(--font-body);
+      min-height: 100vh;
+      padding: 2rem 1rem 4rem;
+    }
+
+    /* ---------- Instructions banner (DELETE when finished) ---------- */
+    .instructions {
+      background: #1a2a1a;
+      border: 2px dashed #4caf50;
+      border-radius: 10px;
+      padding: 1.2rem 1.5rem;
+      margin: 0 auto 2rem;
+      max-width: 780px;
+      font-family: var(--font-ui);
+      font-size: 0.88rem;
+      line-height: 1.7;
+      color: #b6dab6;
+    }
+    .instructions h2 { color: #6fdb6f; font-size: 1rem; margin-bottom: 0.5rem; }
+    .instructions code {
+      background: #0d1a0d;
+      border-radius: 4px;
+      padding: 0.1em 0.35em;
+      font-size: 0.85em;
+      color: #a8f0a8;
+    }
+
+    /* ---------- Bug counter ---------- */
+    .counter {
+      position: fixed;
+      top: 1rem;
+      right: 1rem;
+      background: var(--counter-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 999px;
+      padding: 0.45rem 1rem;
+      font-family: var(--font-ui);
+      font-size: 0.9rem;
+      color: var(--text-color);
+      z-index: 100;
+      transition: background 0.3s, color 0.3s;
+      user-select: none;
+    }
+    .counter.all-found {
+      background: #1a3a1a;
+      border-color: #4caf50;
+      color: #a8f0a8;
+    }
+
+    /* ---------- Celebration banner ---------- */
+    .celebration {
+      display: none;
+      background: linear-gradient(135deg, #1a3a1a, #0f2a0f);
+      border: 2px solid #4caf50;
+      border-radius: 10px;
+      padding: 1rem 1.5rem;
+      margin: 0 auto 1.5rem;
+      max-width: 780px;
+      text-align: center;
+      font-family: var(--font-ui);
+      color: #a8f0a8;
+      font-size: 1.05rem;
+      animation: fadeIn 0.5s ease;
+    }
+    .celebration.visible { display: block; }
+
+    /* ---------- Main content card ---------- */
+    .content-card {
+      background: var(--surface-color);
+      border: 1px solid var(--border-color);
+      border-radius: 14px;
+      max-width: 780px;
+      margin: 0 auto;
+      padding: 2.5rem 2.8rem;
+      position: relative;
+      line-height: 1.8;
+    }
+
+    .content-card h1 {
+      font-family: var(--font-ui);
+      font-size: 2rem;
+      color: var(--heading-color);
+      margin-bottom: 0.4rem;
+    }
+
+    .content-card .subtitle {
+      font-family: var(--font-ui);
+      font-size: 0.95rem;
+      color: var(--accent-color);
+      margin-bottom: 2rem;
+      letter-spacing: 0.04em;
+    }
+
+    .content-card h2 {
+      font-family: var(--font-ui);
+      font-size: 1.2rem;
+      color: var(--accent-hover);
+      margin: 2rem 0 0.6rem;
+    }
+
+    .content-card p {
+      margin-bottom: 1.1rem;
+      font-size: 1.05rem;
+    }
+
+    /* ---------- Bug element ---------- */
+    /*
+      Each bug is a span with class "bug".
+      Place a bug anywhere inside a paragraph like this:
+
+        <span class="bug" data-fact="Your bonus fact goes here.">bug emoji</span>
+
+      The bug emoji is set in the HTML below — no need to touch the CSS.
+    */
+    .bug {
+      display: inline-block;
+      font-size: 1.1em;
+      opacity: var(--bug-opacity);
+      cursor: pointer;
+      transition: opacity 0.2s, transform 0.2s;
+      position: relative;
+      /* Slightly offset bugs so they sit near text without disrupting flow */
+      vertical-align: middle;
+      line-height: 1;
+      user-select: none;
+    }
+    .bug:hover {
+      opacity: 0.75;
+      transform: scale(1.25);
+    }
+    .bug.found {
+      opacity: 1;
+      filter: drop-shadow(0 0 6px #6fdb6f);
+      cursor: default;
+      pointer-events: none;
+    }
+
+    /* ---------- Popup ---------- */
+    .popup-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.55);
+      z-index: 200;
+      align-items: center;
+      justify-content: center;
+      animation: fadeIn 0.2s ease;
+    }
+    .popup-overlay.visible { display: flex; }
+
+    .popup-card {
+      background: var(--popup-bg);
+      border: 2px solid var(--popup-border);
+      border-radius: 14px;
+      padding: 1.8rem 2rem;
+      max-width: 380px;
+      width: 90%;
+      position: relative;
+      animation: popIn 0.25s ease;
+      font-family: var(--font-ui);
+    }
+
+    .popup-card .popup-heading {
+      font-size: 0.78rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--accent-color);
+      margin-bottom: 0.5rem;
+    }
+
+    .popup-card .popup-icon {
+      font-size: 2rem;
+      margin-bottom: 0.5rem;
+      display: block;
+    }
+
+    .popup-card .popup-fact {
+      font-size: 1rem;
+      color: var(--text-color);
+      line-height: 1.6;
+    }
+
+    .popup-close {
+      position: absolute;
+      top: 0.7rem;
+      right: 0.9rem;
+      background: none;
+      border: none;
+      color: var(--text-color);
+      font-size: 1.3rem;
+      cursor: pointer;
+      line-height: 1;
+      opacity: 0.6;
+      transition: opacity 0.2s;
+      font-family: var(--font-ui);
+    }
+    .popup-close:hover { opacity: 1; }
+
+    /* ---------- Animations ---------- */
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to   { opacity: 1; }
+    }
+    @keyframes popIn {
+      from { opacity: 0; transform: scale(0.85); }
+      to   { opacity: 1; transform: scale(1); }
+    }
+
+    /* ---------- Responsive ---------- */
+    @media (max-width: 600px) {
+      .content-card { padding: 1.5rem 1.2rem; }
+      .content-card h1 { font-size: 1.4rem; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ============================================================
+       INSTRUCTIONS BANNER
+       Read this, then DELETE the entire <div class="instructions">
+       block when your page is finished.
+  ============================================================ -->
+  <div class="instructions">
+    <h2>How to set up your Bug Hunt page</h2>
+    <p><strong>1. Change the page title</strong> — edit the <code>&lt;title&gt;</code> tag in the &lt;head&gt; and the <code>&lt;h1&gt;</code> tag in the content card.</p>
+    <p><strong>2. Write your content</strong> — replace the placeholder text inside the three <code>&lt;p&gt;</code> paragraphs with your own topic information.</p>
+    <p><strong>3. Place your bugs</strong> — there are already 3 <code>&lt;span class="bug"&gt;</code> elements hidden in the paragraphs. Move them wherever you like within the text and update the <code>data-fact="..."</code> attribute on each one with a real bonus fact about your topic.</p>
+    <p><strong>4. Customise the look</strong> — change colours, fonts, and bug visibility in the <code>:root</code> block at the top of the <code>&lt;style&gt;</code> section. Lower <code>--bug-opacity</code> to make bugs harder to find.</p>
+    <p><strong>5. Delete this banner</strong> — remove this entire <code>&lt;div class="instructions"&gt;</code> block before you submit or share your page.</p>
+  </div>
+  <!-- END INSTRUCTIONS BANNER -->
+
+  <!-- Bug counter — updated automatically by the script -->
+  <div class="counter" id="counter">Bugs found: 0 / 3</div>
+
+  <!-- Celebration message — shown automatically when all bugs are found -->
+  <div class="celebration" id="celebration">
+    You found all 3 bugs! Great detective work — you clearly know your stuff.
+  </div>
+
+  <!-- ============================================================
+       MAIN CONTENT CARD
+       Replace the heading, subtitle, and paragraph text below
+       with your own topic content. Keep the <span class="bug">
+       elements somewhere inside the paragraphs.
+  ============================================================ -->
+  <div class="content-card">
+
+    <!-- STUDENT: Change this heading to your topic title -->
+    <h1>The Water Cycle</h1>
+    <!-- STUDENT: Change this subtitle to a short description or unit name -->
+    <p class="subtitle">Year 9 Science &mdash; Earth Systems</p>
+
+    <!-- ---- Section 1 ---- -->
+    <!-- STUDENT: Replace this heading and paragraph with your own content -->
+    <h2>What is the Water Cycle?</h2>
+    <p>
+      The water cycle, also called the hydrological cycle, describes the continuous
+      movement of water on, above, and below the surface of the Earth. Water changes
+      state — from liquid to gas to solid — as it travels through the atmosphere,
+      land, and oceans. This process has been running for billions of years and is
+      essential for all life on Earth.
+      <!--
+        BUG 1 is hidden here.
+        Edit data-fact="..." to change the bonus fact students discover.
+        Move this <span> to a different position in the text if you like.
+      -->
+      <span class="bug" data-fact="About 97% of all water on Earth is salt water in the oceans. Only 3% is fresh water, and most of that is locked in glaciers and ice caps.">🐛</span>
+    </p>
+
+    <!-- ---- Section 2 ---- -->
+    <!-- STUDENT: Replace this heading and paragraph with your own content -->
+    <h2>Evaporation and Condensation</h2>
+    <p>
+      When the sun heats the surface of oceans, lakes, and rivers, water evaporates
+      and rises into the atmosphere as water vapour. As it rises, it cools and
+      condenses around tiny dust particles to form clouds. This is the same process
+      you see when a cold drink forms droplets on the outside of a glass on a warm day.
+      <!--
+        BUG 2 is hidden here.
+        Edit data-fact="..." to change the bonus fact.
+      -->
+      <span class="bug" data-fact="A single large cumulonimbus cloud can hold more than 500,000 tonnes of water — roughly the weight of 100,000 elephants.">🐛</span>
+      Eventually, when water droplets in clouds combine and grow heavy enough, they
+      fall back to Earth as precipitation — rain, sleet, snow, or hail.
+    </p>
+
+    <!-- ---- Section 3 ---- -->
+    <!-- STUDENT: Replace this heading and paragraph with your own content -->
+    <h2>Collection and Runoff</h2>
+    <p>
+      When precipitation reaches the ground, it takes several paths. Some water
+      flows over the surface as runoff, entering streams and rivers that eventually
+      drain into the ocean. Some soaks into the soil through a process called
+      infiltration, replenishing underground aquifers. Plants also absorb water
+      through their roots and release it back into the atmosphere through their
+      leaves in a process called transpiration. Together, evaporation and
+      transpiration are often combined and called
+      <!--
+        BUG 3 is hidden here.
+        Edit data-fact="..." to change the bonus fact.
+      -->
+      <span class="bug" data-fact="The Amazon rainforest produces so much water vapour through transpiration that it creates its own weather system, including regular rainfall that keeps the forest alive.">🐛</span>
+      evapotranspiration — a key driver of the whole cycle.
+    </p>
+
+  </div>
+  <!-- END CONTENT CARD -->
+
+  <!-- ============================================================
+       BONUS FACT POPUP
+       This is shown automatically when a bug is clicked.
+       You do not need to edit anything inside this block.
+  ============================================================ -->
+  <div class="popup-overlay" id="popupOverlay">
+    <div class="popup-card">
+      <button class="popup-close" id="popupClose" title="Close">&times;</button>
+      <span class="popup-icon">🐛</span>
+      <p class="popup-heading">Bonus Fact!</p>
+      <p class="popup-fact" id="popupFact">Fact text goes here.</p>
+    </div>
+  </div>
+  <!-- END POPUP -->
+
+  <script>
+    // ============================================================
+    // BUG HUNT SCRIPT — no need to edit this
+    // ============================================================
+
+    var bugs = document.querySelectorAll('.bug');
+    var overlay = document.getElementById('popupOverlay');
+    var popupFact = document.getElementById('popupFact');
+    var popupClose = document.getElementById('popupClose');
+    var counter = document.getElementById('counter');
+    var celebration = document.getElementById('celebration');
+
+    // Total number of bugs (reads from the DOM so adding/removing bugs works automatically)
+    var totalBugs = bugs.length;
+    var foundCount = 0;
+
+    // Track which bugs have already been found (by index)
+    var foundBugs = [];
+
+    function updateCounter() {
+      counter.textContent = 'Bugs found: ' + foundCount + ' / ' + totalBugs;
+      if (foundCount === totalBugs) {
+        counter.classList.add('all-found');
+        celebration.classList.add('visible');
+      }
+    }
+
+    function openPopup(factText) {
+      popupFact.textContent = factText;
+      overlay.classList.add('visible');
+    }
+
+    function closePopup() {
+      overlay.classList.remove('visible');
+    }
+
+    // Attach click listeners to every bug
+    bugs.forEach(function (bug, index) {
+      bug.addEventListener('click', function () {
+        var fact = bug.getAttribute('data-fact');
+
+        // Only increment the counter the first time this bug is clicked
+        if (foundBugs.indexOf(index) === -1) {
+          foundBugs.push(index);
+          foundCount = foundCount + 1;
+          bug.classList.add('found');
+          updateCounter();
+        }
+
+        openPopup(fact);
+      });
+    });
+
+    // Close popup via X button
+    popupClose.addEventListener('click', function () {
+      closePopup();
+    });
+
+    // Close popup by clicking the dark overlay outside the card
+    overlay.addEventListener('click', function (event) {
+      if (event.target === overlay) {
+        closePopup();
+      }
+    });
+
+    // Close popup with Escape key
+    document.addEventListener('keydown', function (event) {
+      if (event.key === 'Escape') {
+        closePopup();
+      }
+    });
+  </script>
+
+</body>
+</html>

@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>City Words – Vocabulary Flashcards</title>
+  <style>
+    /* ============================================================
+       CUSTOMIZATION ZONE
+    ============================================================ */
+    :root {
+      --bg-color: #1a1a2e;
+      --card-width: 280px;
+      --card-height: 180px;
+      --front-bg: #16213e;
+      --front-text: #e0e0e0;
+      --back-bg: #0f3460;
+      --back-text: #e0e0e0;
+      --word-color: #e94560;
+      --border-color: #e94560;
+      --btn-bg: #e94560;
+      --btn-text: #ffffff;
+      --btn-hover: #c73652;
+      --heading-color: #e94560;
+      --font-family: 'Segoe UI', Arial, sans-serif;
+      --font-size-word: 1.6rem;
+      --font-size-def: 0.95rem;
+      --font-size-label: 0.75rem;
+      --flip-duration: 0.6s;
+    }
+
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg-color);
+      font-family: var(--font-family);
+      color: var(--front-text);
+      min-height: 100vh;
+      padding: 2rem 1rem 3rem;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+
+    header h1 {
+      font-size: 2.2rem;
+      color: var(--heading-color);
+      letter-spacing: 0.04em;
+      margin-bottom: 0.4rem;
+    }
+
+    header p.subtitle {
+      color: #a0a0b0;
+      font-size: 1rem;
+    }
+
+    .controls {
+      display: flex;
+      justify-content: center;
+      gap: 1rem;
+      margin-bottom: 2.5rem;
+    }
+
+    .controls button {
+      background: var(--btn-bg);
+      color: var(--btn-text);
+      border: none;
+      border-radius: 6px;
+      padding: 0.6rem 1.6rem;
+      font-size: 0.95rem;
+      font-family: var(--font-family);
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .controls button:hover {
+      background: var(--btn-hover);
+    }
+
+    .card-grid {
+      display: grid;
+      grid-template-columns: repeat(3, var(--card-width));
+      gap: 1.5rem;
+      justify-content: center;
+      max-width: 960px;
+      margin: 0 auto;
+    }
+
+    @media (max-width: 700px) {
+      .card-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    @media (max-width: 440px) {
+      .card-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .card {
+      width: 100%;
+      height: var(--card-height);
+      cursor: pointer;
+      perspective: 1000px;
+    }
+
+    .card-inner {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      transform-style: preserve-3d;
+      transition: transform var(--flip-duration) ease;
+      border-radius: 10px;
+    }
+
+    .card.flipped .card-inner {
+      transform: rotateY(180deg);
+    }
+
+    .card-front,
+    .card-back {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      border-radius: 10px;
+      backface-visibility: hidden;
+      -webkit-backface-visibility: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 1.2rem;
+      text-align: center;
+      border: 2px solid var(--border-color);
+    }
+
+    .card-front {
+      background: var(--front-bg);
+    }
+
+    .card-front .label {
+      font-size: var(--font-size-label);
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: #888;
+      margin-bottom: 0.5rem;
+    }
+
+    .card-front .word {
+      font-size: var(--font-size-word);
+      font-weight: 700;
+      color: var(--word-color);
+      line-height: 1.2;
+    }
+
+    .card-front .hint {
+      font-size: 0.72rem;
+      color: #555;
+      margin-top: 0.8rem;
+      font-style: italic;
+    }
+
+    .card-back {
+      background: var(--back-bg);
+      transform: rotateY(180deg);
+    }
+
+    .card-back .label {
+      font-size: var(--font-size-label);
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: #8899bb;
+      margin-bottom: 0.5rem;
+    }
+
+    .card-back .definition {
+      font-size: var(--font-size-def);
+      color: var(--back-text);
+      line-height: 1.5;
+    }
+
+    .progress {
+      text-align: center;
+      margin-top: 2rem;
+      color: #666;
+      font-size: 0.9rem;
+    }
+
+    .progress span {
+      color: var(--heading-color);
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>City Words</h1>
+    <p class="subtitle">Geography &mdash; Urbanisation &mdash; click a card to see the meaning</p>
+  </header>
+
+  <div class="controls">
+    <button id="btn-flip-all">Flip All</button>
+    <button id="btn-reset">Reset</button>
+  </div>
+
+  <div class="card-grid" id="card-grid">
+
+    <!-- Card 1 -->
+    <div class="card">
+      <div class="card-inner">
+        <div class="card-front">
+          <span class="label">Word</span>
+          <span class="word">Urbanisation</span>
+          <span class="hint">click to flip</span>
+        </div>
+        <div class="card-back">
+          <span class="label">Meaning</span>
+          <span class="definition">When lots of people move to live in cities. Cities get bigger.</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Card 2 -->
+    <div class="card">
+      <div class="card-inner">
+        <div class="card-front">
+          <span class="label">Word</span>
+          <span class="word">Migration</span>
+          <span class="hint">click to flip</span>
+        </div>
+        <div class="card-back">
+          <span class="label">Meaning</span>
+          <span class="definition">When people move from one place to another place to live.</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Card 3 -->
+    <div class="card">
+      <div class="card-inner">
+        <div class="card-front">
+          <span class="label">Word</span>
+          <span class="word">Rural</span>
+          <span class="hint">click to flip</span>
+        </div>
+        <div class="card-back">
+          <span class="label">Meaning</span>
+          <span class="definition">The countryside. Farms and small towns. Far from big cities.</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Card 4 -->
+    <div class="card">
+      <div class="card-inner">
+        <div class="card-front">
+          <span class="label">Word</span>
+          <span class="word">Urban</span>
+          <span class="hint">click to flip</span>
+        </div>
+        <div class="card-back">
+          <span class="label">Meaning</span>
+          <span class="definition">In or near a city. Lots of people, buildings, and roads.</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Card 5 -->
+    <div class="card">
+      <div class="card-inner">
+        <div class="card-front">
+          <span class="label">Word</span>
+          <span class="word">Population</span>
+          <span class="hint">click to flip</span>
+        </div>
+        <div class="card-back">
+          <span class="label">Meaning</span>
+          <span class="definition">The number of people who live in a place.</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Card 6 -->
+    <div class="card">
+      <div class="card-inner">
+        <div class="card-front">
+          <span class="label">Word</span>
+          <span class="word">Sustainability</span>
+          <span class="hint">click to flip</span>
+        </div>
+        <div class="card-back">
+          <span class="label">Meaning</span>
+          <span class="definition">Using the Earth carefully so it stays healthy for people in the future.</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <p class="progress">
+    <span id="flipped-count">0</span> of <span id="total-count">6</span> cards flipped
+  </p>
+
+  <script>
+    var cards = document.querySelectorAll('.card');
+
+    cards.forEach(function (card) {
+      card.addEventListener('click', function () {
+        card.classList.toggle('flipped');
+        updateProgress();
+      });
+    });
+
+    document.getElementById('btn-flip-all').addEventListener('click', function () {
+      cards.forEach(function (card) {
+        card.classList.add('flipped');
+      });
+      updateProgress();
+    });
+
+    document.getElementById('btn-reset').addEventListener('click', function () {
+      cards.forEach(function (card) {
+        card.classList.remove('flipped');
+      });
+      updateProgress();
+    });
+
+    function updateProgress() {
+      var flipped = document.querySelectorAll('.card.flipped').length;
+      document.getElementById('flipped-count').textContent = flipped;
+      document.getElementById('total-count').textContent = cards.length;
+    }
+
+    updateProgress();
+  </script>
+
+</body>
+</html>

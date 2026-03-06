@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Urbanisation Quiz</title>
+  <style>
+    /* ============================================
+       CUSTOMIZATION ZONE
+    ============================================ */
+    :root {
+      --bg-color: #1a1a2e;
+      --card-color: #16213e;
+      --accent-color: #e94560;
+      --text-color: #eaeaea;
+      --correct-color: #4caf50;
+      --wrong-color: #e94560;
+      --font: 'Segoe UI', sans-serif;
+      --card-radius: 12px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      font-family: var(--font);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 2rem 1rem;
+    }
+
+    h1 {
+      font-size: 2rem;
+      color: var(--accent-color);
+      margin-bottom: 0.4rem;
+      text-align: center;
+    }
+
+    .subtitle {
+      font-size: 1rem;
+      color: #888;
+      margin-bottom: 2rem;
+      text-align: center;
+    }
+
+    .quiz {
+      width: 100%;
+      max-width: 680px;
+      display: flex;
+      flex-direction: column;
+      gap: 2rem;
+    }
+
+    .question-card {
+      background: var(--card-color);
+      border-radius: var(--card-radius);
+      padding: 1.5rem 2rem;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+    }
+
+    .question-number {
+      font-size: 0.78rem;
+      color: var(--accent-color);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      margin-bottom: 0.5rem;
+    }
+
+    .question-text {
+      font-size: 1.2rem;
+      font-weight: 600;
+      margin-bottom: 1.2rem;
+      line-height: 1.5;
+    }
+
+    .options {
+      display: flex;
+      flex-direction: column;
+      gap: 0.6rem;
+    }
+
+    .option-btn {
+      background: rgba(255, 255, 255, 0.05);
+      border: 2px solid rgba(255, 255, 255, 0.1);
+      border-radius: 8px;
+      color: var(--text-color);
+      cursor: pointer;
+      font-family: var(--font);
+      font-size: 1rem;
+      padding: 0.8rem 1rem;
+      text-align: left;
+      transition: background 0.2s, border-color 0.2s, transform 0.1s;
+      width: 100%;
+    }
+
+    .option-btn:hover:not(:disabled) {
+      background: rgba(255, 255, 255, 0.1);
+      border-color: var(--accent-color);
+      transform: translateX(4px);
+    }
+
+    .option-btn.correct {
+      background: rgba(76, 175, 80, 0.2);
+      border-color: var(--correct-color);
+      color: var(--correct-color);
+    }
+
+    .option-btn.wrong {
+      background: rgba(233, 69, 96, 0.2);
+      border-color: var(--wrong-color);
+      color: var(--wrong-color);
+    }
+
+    .feedback {
+      margin-top: 1rem;
+      padding: 0.7rem 1rem;
+      border-radius: 8px;
+      font-size: 0.95rem;
+      display: none;
+    }
+    .feedback.show { display: block; }
+    .feedback.correct { background: rgba(76, 175, 80, 0.15); color: var(--correct-color); }
+    .feedback.wrong   { background: rgba(233, 69, 96, 0.15); color: var(--wrong-color); }
+
+    .score-banner {
+      background: var(--card-color);
+      border-radius: var(--card-radius);
+      padding: 2rem;
+      text-align: center;
+      display: none;
+      max-width: 680px;
+      width: 100%;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+      margin-top: 1rem;
+    }
+    .score-banner.show { display: block; }
+    .score-banner h2 { color: var(--accent-color); font-size: 1.4rem; margin-bottom: 0.5rem; }
+    .score-banner p  { color: #888; font-size: 1rem; margin-top: 0.3rem; }
+    .score-number    { font-size: 3.5rem; font-weight: 700; color: var(--accent-color); }
+
+    .restart-btn {
+      background: var(--accent-color);
+      border: none;
+      border-radius: 8px;
+      color: white;
+      cursor: pointer;
+      font-family: var(--font);
+      font-size: 1rem;
+      font-weight: 600;
+      margin-top: 1.2rem;
+      padding: 0.8rem 2rem;
+      transition: opacity 0.2s;
+    }
+    .restart-btn:hover { opacity: 0.85; }
+  </style>
+</head>
+<body>
+
+  <h1>Urbanisation Quiz</h1>
+  <p class="subtitle">Select the correct answer for each question.</p>
+
+  <div class="quiz" id="quiz">
+
+    <!-- Question 1 -->
+    <div class="question-card">
+      <div class="question-number">Question 1</div>
+      <div class="question-text">What does the word "urbanisation" mean?</div>
+      <div class="options">
+        <button class="option-btn" data-correct="true">More people move to live in cities.</button>
+        <button class="option-btn">More people move to live on farms.</button>
+        <button class="option-btn">Cities get smaller over time.</button>
+        <button class="option-btn">People leave Australia.</button>
+      </div>
+      <div class="feedback"></div>
+    </div>
+
+    <!-- Question 2 -->
+    <div class="question-card">
+      <div class="question-number">Question 2</div>
+      <div class="question-text">About how many Australians live in a city or large town?</div>
+      <div class="options">
+        <button class="option-btn">1 in every 10</button>
+        <button class="option-btn">5 in every 10</button>
+        <button class="option-btn" data-correct="true">9 in every 10</button>
+        <button class="option-btn">2 in every 10</button>
+      </div>
+      <div class="feedback"></div>
+    </div>
+
+    <!-- Question 3 -->
+    <div class="question-card">
+      <div class="question-number">Question 3</div>
+      <div class="question-text">What is the main reason people move to cities?</div>
+      <div class="options">
+        <button class="option-btn" data-correct="true">To find jobs.</button>
+        <button class="option-btn">To find clean air.</button>
+        <button class="option-btn">To get away from schools.</button>
+        <button class="option-btn">To live near the ocean.</button>
+      </div>
+      <div class="feedback"></div>
+    </div>
+
+    <!-- Question 4 -->
+    <div class="question-card">
+      <div class="question-number">Question 4</div>
+      <div class="question-text">Which of these is a problem that can happen when a city grows too fast?</div>
+      <div class="options">
+        <button class="option-btn">More parks and green spaces.</button>
+        <button class="option-btn" data-correct="true">Traffic jams and air pollution.</button>
+        <button class="option-btn">Cheaper houses for everyone.</button>
+        <button class="option-btn">More farms near the city.</button>
+      </div>
+      <div class="feedback"></div>
+    </div>
+
+    <!-- Question 5 -->
+    <div class="question-card">
+      <div class="question-number">Question 5</div>
+      <div class="question-text">What does "sustainable city" mean?</div>
+      <div class="options">
+        <button class="option-btn" data-correct="true">A city that looks after the environment and uses less energy.</button>
+        <button class="option-btn">A city with lots of cars and roads.</button>
+        <button class="option-btn">A very old city.</button>
+        <button class="option-btn">A city far away from the ocean.</button>
+      </div>
+      <div class="feedback"></div>
+    </div>
+
+  </div>
+
+  <div class="score-banner" id="scoreBanner">
+    <h2>Quiz Complete!</h2>
+    <div class="score-number" id="scoreNumber">0/0</div>
+    <p>questions correct</p>
+    <button class="restart-btn" onclick="restartQuiz()">Try Again</button>
+  </div>
+
+  <script>
+    var answered = 0;
+    var correct  = 0;
+    var total    = 0;
+
+    document.addEventListener('DOMContentLoaded', function() {
+      var cards = document.querySelectorAll('.question-card');
+      total = cards.length;
+
+      cards.forEach(function(card) {
+        var buttons  = card.querySelectorAll('.option-btn');
+        var feedback = card.querySelector('.feedback');
+
+        buttons.forEach(function(btn) {
+          btn.addEventListener('click', function() {
+            if (card.dataset.answered) return;
+            card.dataset.answered = 'true';
+            answered++;
+
+            buttons.forEach(function(b) { b.disabled = true; });
+
+            if (btn.dataset.correct === 'true') {
+              btn.classList.add('correct');
+              feedback.textContent  = 'Correct!';
+              feedback.className    = 'feedback show correct';
+              correct++;
+            } else {
+              btn.classList.add('wrong');
+              feedback.textContent = 'Not quite. The correct answer is highlighted.';
+              feedback.className   = 'feedback show wrong';
+              buttons.forEach(function(b) {
+                if (b.dataset.correct === 'true') b.classList.add('correct');
+              });
+            }
+
+            if (answered === total) {
+              document.getElementById('scoreNumber').textContent = correct + '/' + total;
+              document.getElementById('scoreBanner').classList.add('show');
+            }
+          });
+        });
+      });
+    });
+
+    function restartQuiz() {
+      var cards = document.querySelectorAll('.question-card');
+      answered = 0;
+      correct  = 0;
+
+      cards.forEach(function(card) {
+        delete card.dataset.answered;
+        var buttons  = card.querySelectorAll('.option-btn');
+        var feedback = card.querySelector('.feedback');
+
+        buttons.forEach(function(btn) {
+          btn.disabled  = false;
+          btn.className = 'option-btn';
+        });
+
+        feedback.className   = 'feedback';
+        feedback.textContent = '';
+      });
+
+      document.getElementById('scoreBanner').classList.remove('show');
+    }
+  </script>
+
+</body>
+</html>

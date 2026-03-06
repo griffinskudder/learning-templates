@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bug Hunt – Urbanisation in the USA</title>
+  <style>
+    /* ============================================================
+       CUSTOMIZATION ZONE
+    ============================================================ */
+    :root {
+      --bg-color: #0f1117;
+      --surface-color: #1c1f2b;
+      --border-color: #2e3248;
+      --text-color: #dde1f0;
+      --heading-color: #ffffff;
+      --accent-color: #5b8dee;
+      --accent-hover: #789ef5;
+      --popup-bg: #252940;
+      --popup-border: #5b8dee;
+      --counter-bg: #1c1f2b;
+      --bug-opacity: 0.25;
+      --font-body: Georgia, 'Times New Roman', serif;
+      --font-ui: 'Segoe UI', Arial, sans-serif;
+    }
+    /* ============================================================ */
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      font-family: var(--font-body);
+      min-height: 100vh;
+      padding: 2rem 1rem 4rem;
+    }
+
+    .counter {
+      position: fixed;
+      top: 1rem;
+      right: 1rem;
+      background: var(--counter-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 999px;
+      padding: 0.45rem 1rem;
+      font-family: var(--font-ui);
+      font-size: 0.9rem;
+      color: var(--text-color);
+      z-index: 100;
+      transition: background 0.3s, color 0.3s;
+      user-select: none;
+    }
+    .counter.all-found {
+      background: #1a3a1a;
+      border-color: #4caf50;
+      color: #a8f0a8;
+    }
+
+    .celebration {
+      display: none;
+      background: linear-gradient(135deg, #1a3a1a, #0f2a0f);
+      border: 2px solid #4caf50;
+      border-radius: 10px;
+      padding: 1rem 1.5rem;
+      margin: 0 auto 1.5rem;
+      max-width: 780px;
+      text-align: center;
+      font-family: var(--font-ui);
+      color: #a8f0a8;
+      font-size: 1.05rem;
+      animation: fadeIn 0.5s ease;
+    }
+    .celebration.visible { display: block; }
+
+    .content-card {
+      background: var(--surface-color);
+      border: 1px solid var(--border-color);
+      border-radius: 14px;
+      max-width: 780px;
+      margin: 0 auto;
+      padding: 2.5rem 2.8rem;
+      position: relative;
+      line-height: 1.8;
+    }
+
+    .content-card h1 {
+      font-family: var(--font-ui);
+      font-size: 2rem;
+      color: var(--heading-color);
+      margin-bottom: 0.4rem;
+    }
+
+    .content-card .subtitle {
+      font-family: var(--font-ui);
+      font-size: 0.95rem;
+      color: var(--accent-color);
+      margin-bottom: 2rem;
+      letter-spacing: 0.04em;
+    }
+
+    .content-card h2 {
+      font-family: var(--font-ui);
+      font-size: 1.2rem;
+      color: var(--accent-hover);
+      margin: 2rem 0 0.6rem;
+    }
+
+    .content-card p {
+      margin-bottom: 1.1rem;
+      font-size: 1.05rem;
+    }
+
+    .bug {
+      display: inline-block;
+      font-size: 1.1em;
+      opacity: var(--bug-opacity);
+      cursor: pointer;
+      transition: opacity 0.2s, transform 0.2s;
+      position: relative;
+      vertical-align: middle;
+      line-height: 1;
+      user-select: none;
+    }
+    .bug:hover {
+      opacity: 0.75;
+      transform: scale(1.25);
+    }
+    .bug.found {
+      opacity: 1;
+      filter: drop-shadow(0 0 6px #6fdb6f);
+      cursor: default;
+      pointer-events: none;
+    }
+
+    .popup-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.55);
+      z-index: 200;
+      align-items: center;
+      justify-content: center;
+      animation: fadeIn 0.2s ease;
+    }
+    .popup-overlay.visible { display: flex; }
+
+    .popup-card {
+      background: var(--popup-bg);
+      border: 2px solid var(--popup-border);
+      border-radius: 14px;
+      padding: 1.8rem 2rem;
+      max-width: 380px;
+      width: 90%;
+      position: relative;
+      animation: popIn 0.25s ease;
+      font-family: var(--font-ui);
+    }
+
+    .popup-card .popup-heading {
+      font-size: 0.78rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--accent-color);
+      margin-bottom: 0.5rem;
+    }
+
+    .popup-card .popup-icon {
+      font-size: 2rem;
+      margin-bottom: 0.5rem;
+      display: block;
+    }
+
+    .popup-card .popup-fact {
+      font-size: 1rem;
+      color: var(--text-color);
+      line-height: 1.6;
+    }
+
+    .popup-close {
+      position: absolute;
+      top: 0.7rem;
+      right: 0.9rem;
+      background: none;
+      border: none;
+      color: var(--text-color);
+      font-size: 1.3rem;
+      cursor: pointer;
+      line-height: 1;
+      opacity: 0.6;
+      transition: opacity 0.2s;
+      font-family: var(--font-ui);
+    }
+    .popup-close:hover { opacity: 1; }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to   { opacity: 1; }
+    }
+    @keyframes popIn {
+      from { opacity: 0; transform: scale(0.85); }
+      to   { opacity: 1; transform: scale(1); }
+    }
+
+    @media (max-width: 600px) {
+      .content-card { padding: 1.5rem 1.2rem; }
+      .content-card h1 { font-size: 1.4rem; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="counter" id="counter">Bugs found: 0 / 3</div>
+
+  <div class="celebration" id="celebration">
+    You found all 3 bugs! Great work — you know a lot about cities!
+  </div>
+
+  <div class="content-card">
+
+    <h1>Urbanisation in the USA</h1>
+    <p class="subtitle">Year 8 Geography &mdash; Urbanisation</p>
+
+    <h2>What is Urbanisation?</h2>
+    <p>
+      Urbanisation means more people move to live in cities.
+      Cities grow bigger when this happens.
+      Today, more than half of all people in the world live in a city.
+      The USA is one of the most urbanised countries in the world.
+      About 83 out of every 100 Americans live in a city.
+      <span class="bug" data-fact="New York City has over 8 million people. That is more people than the whole state of Victoria in Australia.">&#x1F41B;</span>
+    </p>
+
+    <h2>Why Do People Move to Cities?</h2>
+    <p>
+      People move to cities to find work.
+      Cities have more jobs than the countryside.
+      Cities also have schools, hospitals, and shops.
+      In the USA, many people moved to cities when factories were built.
+      Factories needed lots of workers.
+      The workers needed places to live.
+      <span class="bug" data-fact="Los Angeles has some of the busiest roads in the world. People there spend a lot of time stuck in traffic every week.">&#x1F41B;</span>
+      More people kept coming, so cities kept growing.
+    </p>
+
+    <h2>What Problems Do Cities Have?</h2>
+    <p>
+      When cities grow fast, problems can happen.
+      There can be too many cars on the roads.
+      This causes traffic jams and air pollution.
+      Housing can be hard to find and very expensive.
+      Some people in cities are very poor.
+      Cities need good planning to look after everyone.
+      <span class="bug" data-fact="Cities cover only about 3% of the land on Earth. But they use about 75% of the world's energy. That is a lot for such a small area!">&#x1F41B;</span>
+    </p>
+
+  </div>
+
+  <div class="popup-overlay" id="popupOverlay">
+    <div class="popup-card">
+      <button class="popup-close" id="popupClose" title="Close">&times;</button>
+      <span class="popup-icon">&#x1F41B;</span>
+      <p class="popup-heading">Bonus Fact!</p>
+      <p class="popup-fact" id="popupFact">Fact text goes here.</p>
+    </div>
+  </div>
+
+  <script>
+    var bugs = document.querySelectorAll('.bug');
+    var overlay = document.getElementById('popupOverlay');
+    var popupFact = document.getElementById('popupFact');
+    var popupClose = document.getElementById('popupClose');
+    var counter = document.getElementById('counter');
+    var celebration = document.getElementById('celebration');
+
+    var totalBugs = bugs.length;
+    var foundCount = 0;
+    var foundBugs = [];
+
+    function updateCounter() {
+      counter.textContent = 'Bugs found: ' + foundCount + ' / ' + totalBugs;
+      if (foundCount === totalBugs) {
+        counter.classList.add('all-found');
+        celebration.classList.add('visible');
+      }
+    }
+
+    function openPopup(factText) {
+      popupFact.textContent = factText;
+      overlay.classList.add('visible');
+    }
+
+    function closePopup() {
+      overlay.classList.remove('visible');
+    }
+
+    bugs.forEach(function (bug, index) {
+      bug.addEventListener('click', function () {
+        var fact = bug.getAttribute('data-fact');
+        if (foundBugs.indexOf(index) === -1) {
+          foundBugs.push(index);
+          foundCount = foundCount + 1;
+          bug.classList.add('found');
+          updateCounter();
+        }
+        openPopup(fact);
+      });
+    });
+
+    popupClose.addEventListener('click', function () {
+      closePopup();
+    });
+
+    overlay.addEventListener('click', function (event) {
+      if (event.target === overlay) {
+        closePopup();
+      }
+    });
+
+    document.addEventListener('keydown', function (event) {
+      if (event.key === 'Escape') {
+        closePopup();
+      }
+    });
+  </script>
+
+</body>
+</html>

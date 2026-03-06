@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <!-- ============================================================
+       CAPTION THE STORYBOARD — Learning Template
+       Instructions: Edit the title, replace image src attributes
+       with your own URLs or file paths, and update the caption
+       text inside each <p class="caption"> tag.
+       Delete the green instructions banner when you are done.
+  ============================================================ -->
+
+  <!-- Edit the title below to match your project -->
+  <title>Caption the Storyboard</title>
+
+  <style>
+    /* ============================================================
+       CUSTOMIZATION ZONE — edit these variables to restyle
+       the whole template from one place.
+    ============================================================ */
+    :root {
+      --bg-color:          #1a1a2e;   /* Page background */
+      --panel-bg:          #16213e;   /* Individual panel background */
+      --panel-border:      #0f3460;   /* Panel border color */
+      --accent:            #e94560;   /* Accent color: panel numbers, highlights */
+      --caption-bg:        #0f3460;   /* Caption area background */
+      --caption-color:     #e0e0e0;   /* Caption text color */
+      --title-color:       #ffffff;   /* Storyboard title color */
+      --label-color:       #e94560;   /* Panel number label color */
+      --placeholder-color: #4a4a6a;   /* Placeholder image border and text color */
+      --font-body:         Georgia, 'Times New Roman', serif;  /* Caption font */
+      --font-ui:           'Segoe UI', Arial, sans-serif;      /* UI / label font */
+      --panel-radius:      10px;      /* Rounded corners on panels */
+      --gap:               20px;      /* Gap between panels in the grid */
+    }
+
+    /* --- Reset & base --- */
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg-color);
+      color: var(--caption-color);
+      font-family: var(--font-body);
+      min-height: 100vh;
+      padding: 30px 20px 50px;
+    }
+
+    /* --- Instructions banner (students delete this whole <div>) --- */
+    .instructions {
+      background: #1e3a1e;
+      border: 2px solid #4caf50;
+      border-radius: 8px;
+      padding: 18px 22px;
+      margin-bottom: 30px;
+      font-family: var(--font-ui);
+      font-size: 0.9rem;
+      color: #b9f0b9;
+      line-height: 1.6;
+    }
+
+    .instructions h2 {
+      color: #4caf50;
+      margin-bottom: 10px;
+      font-size: 1rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .instructions ol {
+      padding-left: 20px;
+    }
+
+    .instructions li {
+      margin-bottom: 5px;
+    }
+
+    .instructions code {
+      background: #0d1f0d;
+      padding: 1px 5px;
+      border-radius: 3px;
+      font-size: 0.85rem;
+      color: #a5d6a7;
+    }
+
+    .instructions .delete-note {
+      margin-top: 12px;
+      font-weight: bold;
+      color: #81c784;
+    }
+
+    /* --- Page header --- */
+    .page-header {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+
+    /* Edit the text inside <h1 class="storyboard-title"> in the HTML below */
+    .storyboard-title {
+      font-family: var(--font-ui);
+      font-size: clamp(1.6rem, 4vw, 2.8rem);
+      color: var(--title-color);
+      letter-spacing: 0.03em;
+      line-height: 1.2;
+    }
+
+    .storyboard-subtitle {
+      font-family: var(--font-ui);
+      font-size: 0.95rem;
+      color: #888;
+      margin-top: 6px;
+    }
+
+    /* --- 2x2 grid of panels --- */
+    .storyboard-grid {
+      display: grid;
+      /* Two equal columns */
+      grid-template-columns: 1fr 1fr;
+      gap: var(--gap);
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+
+    /* On narrow screens, stack panels into a single column */
+    @media (max-width: 640px) {
+      .storyboard-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* --- Individual panel --- */
+    .panel {
+      background: var(--panel-bg);
+      border: 2px solid var(--panel-border);
+      border-radius: var(--panel-radius);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      transition: border-color 0.25s, box-shadow 0.25s;
+    }
+
+    /* Highlighted panel in presentation mode */
+    .panel.active-panel {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px var(--accent), 0 8px 32px rgba(233, 69, 96, 0.3);
+    }
+
+    /* --- Panel number label --- */
+    .panel-label {
+      font-family: var(--font-ui);
+      font-size: 0.75rem;
+      font-weight: bold;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: var(--label-color);
+      padding: 8px 14px 6px;
+      background: rgba(0, 0, 0, 0.3);
+      border-bottom: 1px solid var(--panel-border);
+    }
+
+    /* --- Image area --- */
+    .panel-image-wrap {
+      position: relative;
+      width: 100%;
+      /* 16:9 aspect ratio padding trick */
+      padding-top: 56.25%;
+      background: #0a0a1a;
+      overflow: hidden;
+    }
+
+    /* The actual <img> inside each panel.
+       Replace the src attribute value with your image URL or file path. */
+    .panel-image-wrap img {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    /* Shown when the image has no src or fails to load */
+    .placeholder-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      border: 3px dashed var(--placeholder-color);
+      color: var(--placeholder-color);
+      font-family: var(--font-ui);
+      font-size: 0.85rem;
+      text-align: center;
+      padding: 16px;
+      gap: 8px;
+      pointer-events: none;
+    }
+
+    .placeholder-overlay .placeholder-icon {
+      font-size: 2.4rem;
+      line-height: 1;
+    }
+
+    .placeholder-overlay code {
+      background: rgba(255,255,255,0.06);
+      padding: 3px 8px;
+      border-radius: 4px;
+      font-size: 0.78rem;
+      word-break: break-all;
+    }
+
+    /* --- Caption area --- */
+    .panel-caption {
+      background: var(--caption-bg);
+      padding: 14px 16px;
+      flex: 1;
+      border-top: 2px solid var(--panel-border);
+    }
+
+    /* Edit the text inside <p class="caption"> to write your caption */
+    .panel-caption .caption {
+      font-family: var(--font-body);
+      font-size: 0.95rem;
+      color: var(--caption-color);
+      line-height: 1.55;
+      font-style: italic;
+    }
+
+    /* --- Presentation mode controls --- */
+    .controls {
+      text-align: center;
+      margin: 30px auto 0;
+      max-width: 1100px;
+      font-family: var(--font-ui);
+    }
+
+    .btn {
+      display: inline-block;
+      padding: 10px 24px;
+      border: 2px solid var(--accent);
+      border-radius: 6px;
+      background: transparent;
+      color: var(--accent);
+      font-family: var(--font-ui);
+      font-size: 0.9rem;
+      font-weight: bold;
+      letter-spacing: 0.05em;
+      cursor: pointer;
+      transition: background 0.2s, color 0.2s;
+      margin: 0 6px;
+    }
+
+    .btn:hover {
+      background: var(--accent);
+      color: #fff;
+    }
+
+    .btn:disabled {
+      opacity: 0.35;
+      cursor: default;
+    }
+
+    .presentation-status {
+      display: block;
+      margin-top: 10px;
+      font-size: 0.82rem;
+      color: #888;
+      min-height: 1.2em;
+    }
+
+    /* In presentation mode, dim all panels except the active one */
+    body.presentation-mode .panel {
+      opacity: 0.25;
+      transition: opacity 0.35s, border-color 0.25s, box-shadow 0.25s;
+    }
+
+    body.presentation-mode .panel.active-panel {
+      opacity: 1;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ============================================================
+       INSTRUCTIONS BANNER
+       DELETE this entire <div class="instructions">...</div>
+       block when you have finished customising the template.
+  ============================================================ -->
+  <div class="instructions">
+    <h2>Setup Instructions — delete this box when done</h2>
+    <ol>
+      <li>Edit the <code>&lt;h1 class="storyboard-title"&gt;</code> text to give your storyboard a title.</li>
+      <li>For each panel, find the <code>&lt;img&gt;</code> tag and replace the placeholder <code>src</code> value with your own image URL or relative file path (e.g. <code>src="my-photo.jpg"</code>).</li>
+      <li>Edit the text inside each <code>&lt;p class="caption"&gt;</code> to write your one-sentence caption.</li>
+      <li>Optional: use the <strong>Presentation Mode</strong> button at the bottom to walk through panels one at a time when sharing with the class.</li>
+      <li>Adjust colours and fonts by changing the values in the <strong>CUSTOMIZATION ZONE</strong> inside the <code>&lt;style&gt;</code> block.</li>
+    </ol>
+    <p class="delete-note">Delete this entire green box before submitting or presenting.</p>
+  </div>
+
+  <!-- ============================================================
+       PAGE HEADER
+       Edit the title and subtitle text below.
+  ============================================================ -->
+  <header class="page-header">
+    <!-- Edit your storyboard title here -->
+    <h1 class="storyboard-title">My Storyboard Title</h1>
+    <!-- Edit or delete this subtitle line -->
+    <p class="storyboard-subtitle">A visual sequence — your subject and class here</p>
+  </header>
+
+  <!-- ============================================================
+       STORYBOARD GRID
+       Four panels in a 2x2 layout.
+       Each panel follows this structure:
+         1. Panel label (Panel 1, Panel 2, etc.)
+         2. Image area — replace the src attribute with your image
+         3. Caption — edit the text in <p class="caption">
+  ============================================================ -->
+  <main class="storyboard-grid" id="storyboard-grid">
+
+    <!-- ======== PANEL 1 ======== -->
+    <!-- To add your image: find src="" below and replace the value
+         with your image URL or local path, e.g. src="step1.jpg" -->
+    <div class="panel" id="panel-1">
+      <div class="panel-label">Panel 1</div>
+      <div class="panel-image-wrap">
+        <!-- REPLACE src="" with your image path or URL -->
+        <img src="" alt="Panel 1 image" class="panel-img">
+        <!-- This placeholder is shown automatically when no src is set — no need to edit it -->
+        <div class="placeholder-overlay">
+          <span class="placeholder-icon">&#128444;</span>
+          <span>Paste your image URL here as the <code>src</code> attribute</span>
+        </div>
+      </div>
+      <div class="panel-caption">
+        <!-- Write your one-sentence caption below -->
+        <p class="caption">Write your caption for Panel 1 here — one sentence describing what is shown.</p>
+      </div>
+    </div>
+
+    <!-- ======== PANEL 2 ======== -->
+    <div class="panel" id="panel-2">
+      <div class="panel-label">Panel 2</div>
+      <div class="panel-image-wrap">
+        <!-- REPLACE src="" with your image path or URL -->
+        <img src="" alt="Panel 2 image" class="panel-img">
+        <div class="placeholder-overlay">
+          <span class="placeholder-icon">&#128444;</span>
+          <span>Paste your image URL here as the <code>src</code> attribute</span>
+        </div>
+      </div>
+      <div class="panel-caption">
+        <!-- Write your one-sentence caption below -->
+        <p class="caption">Write your caption for Panel 2 here — one sentence describing what is shown.</p>
+      </div>
+    </div>
+
+    <!-- ======== PANEL 3 ======== -->
+    <div class="panel" id="panel-3">
+      <div class="panel-label">Panel 3</div>
+      <div class="panel-image-wrap">
+        <!-- REPLACE src="" with your image path or URL -->
+        <img src="" alt="Panel 3 image" class="panel-img">
+        <div class="placeholder-overlay">
+          <span class="placeholder-icon">&#128444;</span>
+          <span>Paste your image URL here as the <code>src</code> attribute</span>
+        </div>
+      </div>
+      <div class="panel-caption">
+        <!-- Write your one-sentence caption below -->
+        <p class="caption">Write your caption for Panel 3 here — one sentence describing what is shown.</p>
+      </div>
+    </div>
+
+    <!-- ======== PANEL 4 ======== -->
+    <div class="panel" id="panel-4">
+      <div class="panel-label">Panel 4</div>
+      <div class="panel-image-wrap">
+        <!-- REPLACE src="" with your image path or URL -->
+        <img src="" alt="Panel 4 image" class="panel-img">
+        <div class="placeholder-overlay">
+          <span class="placeholder-icon">&#128444;</span>
+          <span>Paste your image URL here as the <code>src</code> attribute</span>
+        </div>
+      </div>
+      <div class="panel-caption">
+        <!-- Write your one-sentence caption below -->
+        <p class="caption">Write your caption for Panel 4 here — one sentence describing what is shown.</p>
+      </div>
+    </div>
+
+    <!-- ============================================================
+         HOW TO ADD MORE PANELS (optional — template ships with 4)
+         Copy the block from <!-- PANEL N --> to its closing </div>
+         and paste it after Panel 4. Change the panel number in the
+         label and the id attribute. The grid will expand automatically.
+    ============================================================ -->
+
+  </main>
+
+  <!-- ============================================================
+       PRESENTATION MODE CONTROLS
+       These buttons are powered by the JS below.
+       You can delete this whole <div class="controls"> section
+       if you do not need presentation mode.
+  ============================================================ -->
+  <div class="controls" id="controls">
+    <button class="btn" id="btn-start" onclick="startPresentation()">Start Presentation Mode</button>
+    <button class="btn" id="btn-prev" onclick="prevPanel()" style="display:none;" disabled>Previous</button>
+    <button class="btn" id="btn-next" onclick="nextPanel()" style="display:none;">Next Panel</button>
+    <button class="btn" id="btn-exit" onclick="exitPresentation()" style="display:none;">Exit</button>
+    <span class="presentation-status" id="pres-status"></span>
+  </div>
+
+  <script>
+    /* ============================================================
+       PRESENTATION MODE — vanilla JS
+       Highlights one panel at a time for class sharing.
+       No changes needed here unless you add extra panels.
+    ============================================================ */
+
+    var currentPanel = 0;
+    var panels = [];
+
+    function getPanels() {
+      /* Collect all .panel elements each time, so new panels added
+         in HTML are picked up automatically. */
+      panels = document.querySelectorAll('.panel');
+    }
+
+    function startPresentation() {
+      getPanels();
+      currentPanel = 0;
+      document.body.classList.add('presentation-mode');
+      document.getElementById('btn-start').style.display = 'none';
+      document.getElementById('btn-prev').style.display = 'inline-block';
+      document.getElementById('btn-next').style.display = 'inline-block';
+      document.getElementById('btn-exit').style.display = 'inline-block';
+      highlightPanel(currentPanel);
+    }
+
+    function highlightPanel(index) {
+      getPanels();
+      /* Remove active class from all panels */
+      panels.forEach(function(panel) {
+        panel.classList.remove('active-panel');
+      });
+      /* Add active class to the current panel */
+      if (panels[index]) {
+        panels[index].classList.add('active-panel');
+        /* Scroll panel into view */
+        panels[index].scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+      /* Update status text */
+      document.getElementById('pres-status').textContent =
+        'Panel ' + (index + 1) + ' of ' + panels.length;
+      /* Manage button states */
+      document.getElementById('btn-prev').disabled = (index === 0);
+      document.getElementById('btn-next').disabled = (index === panels.length - 1);
+    }
+
+    function nextPanel() {
+      getPanels();
+      if (currentPanel < panels.length - 1) {
+        currentPanel = currentPanel + 1;
+        highlightPanel(currentPanel);
+      }
+    }
+
+    function prevPanel() {
+      if (currentPanel > 0) {
+        currentPanel = currentPanel - 1;
+        highlightPanel(currentPanel);
+      }
+    }
+
+    function exitPresentation() {
+      getPanels();
+      document.body.classList.remove('presentation-mode');
+      panels.forEach(function(panel) {
+        panel.classList.remove('active-panel');
+      });
+      document.getElementById('btn-start').style.display = 'inline-block';
+      document.getElementById('btn-prev').style.display = 'none';
+      document.getElementById('btn-next').style.display = 'none';
+      document.getElementById('btn-exit').style.display = 'none';
+      document.getElementById('pres-status').textContent = '';
+      currentPanel = 0;
+    }
+
+    /* Hide placeholder overlays for panels whose image src is set */
+    function checkPlaceholders() {
+      var images = document.querySelectorAll('.panel-img');
+      images.forEach(function(img) {
+        var overlay = img.parentNode.querySelector('.placeholder-overlay');
+        if (!overlay) { return; }
+        if (img.getAttribute('src') && img.getAttribute('src') !== '') {
+          overlay.style.display = 'none';
+        } else {
+          overlay.style.display = 'flex';
+        }
+        /* Also hide overlay once the image loads successfully */
+        img.addEventListener('load', function() {
+          overlay.style.display = 'none';
+        });
+        img.addEventListener('error', function() {
+          overlay.style.display = 'flex';
+        });
+      });
+    }
+
+    checkPlaceholders();
+  </script>
+
+</body>
+</html>

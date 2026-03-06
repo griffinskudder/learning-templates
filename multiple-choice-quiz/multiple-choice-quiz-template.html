@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- CHANGE THIS: update the title to match your topic -->
+  <title>My Humanities Quiz</title>
+  <style>
+    /* ============================================
+       CUSTOMIZATION ZONE
+       Change these variables to restyle your quiz
+    ============================================ */
+    :root {
+      --bg-color: #1a1a2e;           /* page background colour */
+      --card-color: #16213e;         /* question card background */
+      --accent-color: #e94560;       /* title and highlight colour */
+      --text-color: #eaeaea;         /* main text colour */
+      --correct-color: #4caf50;      /* correct answer highlight */
+      --wrong-color: #e94560;        /* wrong answer highlight */
+      --font: 'Segoe UI', sans-serif; /* font for all text */
+      --card-radius: 12px;           /* how rounded the cards are */
+    }
+
+    /* === BASE STYLES === */
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      font-family: var(--font);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 2rem 1rem;
+    }
+
+    h1 {
+      font-size: 2rem;
+      color: var(--accent-color);
+      margin-bottom: 0.4rem;
+      text-align: center;
+    }
+
+    .subtitle {
+      font-size: 1rem;
+      color: #888;
+      margin-bottom: 2rem;
+      text-align: center;
+    }
+
+    /* === SETUP INSTRUCTIONS — delete this whole block when your quiz is finished === */
+    .instructions {
+      background: #2a2a00;
+      border: 2px dashed #ffcc00;
+      border-radius: var(--card-radius);
+      padding: 1.2rem 1.5rem;
+      max-width: 680px;
+      width: 100%;
+      margin-bottom: 2rem;
+      font-size: 0.9rem;
+      line-height: 1.7;
+    }
+    .instructions h2 { color: #ffcc00; margin-bottom: 0.5rem; font-size: 1rem; }
+    .instructions ol { padding-left: 1.3rem; }
+    .instructions li { margin-bottom: 0.3rem; }
+    .instructions code {
+      background: #444;
+      padding: 0.1em 0.4em;
+      border-radius: 4px;
+      font-size: 0.85em;
+    }
+
+    /* === QUIZ CONTAINER === */
+    .quiz {
+      width: 100%;
+      max-width: 680px;
+      display: flex;
+      flex-direction: column;
+      gap: 2rem;
+    }
+
+    /* === QUESTION CARD === */
+    .question-card {
+      background: var(--card-color);
+      border-radius: var(--card-radius);
+      padding: 1.5rem 2rem;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+    }
+
+    .question-number {
+      font-size: 0.78rem;
+      color: var(--accent-color);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      margin-bottom: 0.5rem;
+    }
+
+    .question-text {
+      font-size: 1.2rem;
+      font-weight: 600;
+      margin-bottom: 1.2rem;
+      line-height: 1.5;
+    }
+
+    /* === OPTIONAL QUESTION IMAGE === */
+    .question-image {
+      width: 100%;
+      max-height: 280px;
+      object-fit: cover;
+      border-radius: 8px;
+      margin-bottom: 1.2rem;
+      display: block;
+    }
+
+    /* === ANSWER BUTTONS === */
+    .options {
+      display: flex;
+      flex-direction: column;
+      gap: 0.6rem;
+    }
+
+    .option-btn {
+      background: rgba(255, 255, 255, 0.05);
+      border: 2px solid rgba(255, 255, 255, 0.1);
+      border-radius: 8px;
+      color: var(--text-color);
+      cursor: pointer;
+      font-family: var(--font);
+      font-size: 1rem;
+      padding: 0.8rem 1rem;
+      text-align: left;
+      transition: background 0.2s, border-color 0.2s, transform 0.1s;
+      width: 100%;
+    }
+
+    .option-btn:hover:not(:disabled) {
+      background: rgba(255, 255, 255, 0.1);
+      border-color: var(--accent-color);
+      transform: translateX(4px);
+    }
+
+    .option-btn.correct {
+      background: rgba(76, 175, 80, 0.2);
+      border-color: var(--correct-color);
+      color: var(--correct-color);
+    }
+
+    .option-btn.wrong {
+      background: rgba(233, 69, 96, 0.2);
+      border-color: var(--wrong-color);
+      color: var(--wrong-color);
+    }
+
+    /* === FEEDBACK MESSAGE === */
+    .feedback {
+      margin-top: 1rem;
+      padding: 0.7rem 1rem;
+      border-radius: 8px;
+      font-size: 0.95rem;
+      display: none;
+    }
+    .feedback.show { display: block; }
+    .feedback.correct { background: rgba(76, 175, 80, 0.15); color: var(--correct-color); }
+    .feedback.wrong   { background: rgba(233, 69, 96, 0.15); color: var(--wrong-color); }
+
+    /* === SCORE BANNER (appears after all questions answered) === */
+    .score-banner {
+      background: var(--card-color);
+      border-radius: var(--card-radius);
+      padding: 2rem;
+      text-align: center;
+      display: none;
+      max-width: 680px;
+      width: 100%;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+      margin-top: 1rem;
+    }
+    .score-banner.show { display: block; }
+    .score-banner h2 { color: var(--accent-color); font-size: 1.4rem; margin-bottom: 0.5rem; }
+    .score-banner p  { color: #888; font-size: 1rem; margin-top: 0.3rem; }
+    .score-number    { font-size: 3.5rem; font-weight: 700; color: var(--accent-color); }
+
+    .restart-btn {
+      background: var(--accent-color);
+      border: none;
+      border-radius: 8px;
+      color: white;
+      cursor: pointer;
+      font-family: var(--font);
+      font-size: 1rem;
+      font-weight: 600;
+      margin-top: 1.2rem;
+      padding: 0.8rem 2rem;
+      transition: opacity 0.2s;
+    }
+    .restart-btn:hover { opacity: 0.85; }
+  </style>
+</head>
+<body>
+
+  <!-- ================================================================
+       SETUP INSTRUCTIONS — delete this entire block when you are done
+  ================================================================= -->
+  <div class="instructions">
+    <h2>How to set up your quiz</h2>
+    <ol>
+      <li>Change <code>&lt;title&gt;</code> at the top and the <code>&lt;h1&gt;</code> below to your quiz name.</li>
+      <li>Edit the text inside <code>class="question-text"</code> to write your question.</li>
+      <li>Edit the four <code>&lt;button&gt;</code> labels to your four answer choices.</li>
+      <li>On the <strong>correct</strong> button only, add <code>data-correct="true"</code>.</li>
+      <li>To add more questions, copy the block between the dashed comment lines and paste it inside <code>id="quiz"</code>. Update the question number label too.</li>
+      <li><strong>Optional image:</strong> Place your image file in the same folder as this HTML file. Then uncomment the <code>&lt;img&gt;</code> line inside the question card and update the <code>src</code> to your filename.</li>
+      <li>Delete this yellow box when finished.</li>
+    </ol>
+  </div>
+  <!-- === END SETUP INSTRUCTIONS === -->
+
+  <!-- CHANGE THIS: your quiz title -->
+  <h1>My Humanities Quiz</h1>
+  <p class="subtitle">Select the correct answer for each question.</p>
+
+  <div class="quiz" id="quiz">
+
+    <!-- -------------------------------------------------------
+         QUESTION BLOCK — copy everything between these comments
+         to add more questions
+    -------------------------------------------------------- -->
+    <div class="question-card">
+      <div class="question-number">Question 1</div>
+      <!-- CHANGE THIS: your question -->
+      <div class="question-text">Who led the miners at the Eureka Stockade in 1854?</div>
+      <!-- OPTIONAL IMAGE: remove the comment markers and set src to your image filename
+      <img class="question-image" src="your-image.jpg" alt="describe the image here">
+      -->
+      <div class="options">
+        <!-- CHANGE THESE: your four answer options.
+             Add  data-correct="true"  to the correct one only. -->
+        <button class="option-btn" data-correct="true">Peter Lalor</button>
+        <button class="option-btn">John Macarthur</button>
+        <button class="option-btn">Robert O'Hara Burke</button>
+        <button class="option-btn">Charles Hotham</button>
+      </div>
+      <div class="feedback"></div>
+    </div>
+    <!-- ------------------------------------------------------- -->
+
+    <!-- COPY FROM HERE for a second question:
+
+    <div class="question-card">
+      <div class="question-number">Question 2</div>
+      <div class="question-text">Your question goes here?</div>
+      <!-- OPTIONAL IMAGE: remove the comment markers and set src to your image filename
+      <img class="question-image" src="your-image.jpg" alt="describe the image here">
+      -->
+      <div class="options">
+        <button class="option-btn" data-correct="true">Correct answer</button>
+        <button class="option-btn">Wrong answer</button>
+        <button class="option-btn">Wrong answer</button>
+        <button class="option-btn">Wrong answer</button>
+      </div>
+      <div class="feedback"></div>
+    </div>
+
+    TO HERE -->
+
+  </div>
+
+  <!-- Score banner — shown automatically when all questions are answered -->
+  <div class="score-banner" id="scoreBanner">
+    <h2>Quiz Complete!</h2>
+    <div class="score-number" id="scoreNumber">0/0</div>
+    <p>questions correct</p>
+    <button class="restart-btn" onclick="restartQuiz()">Try Again</button>
+  </div>
+
+  <script>
+    // Tracks progress across all questions
+    var answered = 0;
+    var correct  = 0;
+    var total    = 0;
+
+    // Run setup once the page has loaded
+    document.addEventListener('DOMContentLoaded', function() {
+      var cards = document.querySelectorAll('.question-card');
+      total = cards.length;
+
+      // Attach click behaviour to every question card
+      cards.forEach(function(card) {
+        var buttons  = card.querySelectorAll('.option-btn');
+        var feedback = card.querySelector('.feedback');
+
+        buttons.forEach(function(btn) {
+          btn.addEventListener('click', function() {
+            // Do nothing if this card has already been answered
+            if (card.dataset.answered) return;
+            card.dataset.answered = 'true';
+            answered++;
+
+            // Lock all buttons in this card
+            buttons.forEach(function(b) { b.disabled = true; });
+
+            // Check the answer and show feedback
+            if (btn.dataset.correct === 'true') {
+              btn.classList.add('correct');
+              feedback.textContent  = 'Correct!';
+              feedback.className    = 'feedback show correct';
+              correct++;
+            } else {
+              btn.classList.add('wrong');
+              feedback.textContent = 'Not quite. The correct answer is highlighted.';
+              feedback.className   = 'feedback show wrong';
+              // Highlight the correct button for the student to see
+              buttons.forEach(function(b) {
+                if (b.dataset.correct === 'true') b.classList.add('correct');
+              });
+            }
+
+            // Once every question is answered, reveal the score
+            if (answered === total) {
+              document.getElementById('scoreNumber').textContent = correct + '/' + total;
+              document.getElementById('scoreBanner').classList.add('show');
+            }
+          });
+        });
+      });
+    });
+
+    // Reset all questions so the student can try again
+    function restartQuiz() {
+      var cards = document.querySelectorAll('.question-card');
+      answered = 0;
+      correct  = 0;
+
+      cards.forEach(function(card) {
+        delete card.dataset.answered;
+        var buttons  = card.querySelectorAll('.option-btn');
+        var feedback = card.querySelector('.feedback');
+
+        buttons.forEach(function(btn) {
+          btn.disabled  = false;
+          btn.className = 'option-btn';
+        });
+
+        feedback.className   = 'feedback';
+        feedback.textContent = '';
+      });
+
+      document.getElementById('scoreBanner').classList.remove('show');
+    }
+  </script>
+
+</body>
+</html>

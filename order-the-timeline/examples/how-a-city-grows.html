@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>How a City Grows</title>
+  <style>
+    /* =====================================================
+       CUSTOMIZATION ZONE
+    ===================================================== */
+    :root {
+      --bg-color: #1a1a2e;
+      --surface-color: #16213e;
+      --card-color: #0f3460;
+      --accent-color: #e94560;
+      --accent-hover: #c73652;
+      --text-color: #eaeaea;
+      --muted-color: #8899aa;
+      --correct-color: #2ecc71;
+      --incorrect-color: #e74c3c;
+      --font-main: 'Segoe UI', Arial, sans-serif;
+      --card-radius: 10px;
+      --max-width: 720px;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      font-family: var(--font-main);
+      min-height: 100vh;
+      padding: 24px 16px 48px;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 28px;
+    }
+
+    header h1 {
+      font-size: 2rem;
+      letter-spacing: 1px;
+      color: var(--accent-color);
+      margin-bottom: 6px;
+    }
+
+    header p.subtitle {
+      color: var(--muted-color);
+      font-size: 0.95rem;
+    }
+
+    main {
+      max-width: var(--max-width);
+      margin: 0 auto;
+    }
+
+    #timeline-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-bottom: 24px;
+    }
+
+    .event-card {
+      background-color: var(--card-color);
+      border-radius: var(--card-radius);
+      padding: 14px 16px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      transition: background-color 0.4s ease, transform 0.15s ease;
+      border: 2px solid transparent;
+    }
+
+    .event-card.correct {
+      background-color: #1a4d32;
+      border-color: var(--correct-color);
+    }
+
+    .event-card.incorrect {
+      background-color: #4d1a1a;
+      border-color: var(--incorrect-color);
+    }
+
+    .position-label {
+      min-width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background-color: var(--accent-color);
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      font-size: 0.9rem;
+      flex-shrink: 0;
+      transition: background-color 0.4s;
+    }
+
+    .event-card.correct  .position-label { background-color: var(--correct-color); }
+    .event-card.incorrect .position-label { background-color: var(--incorrect-color); }
+
+    .card-content {
+      flex: 1;
+    }
+
+    .card-title {
+      font-size: 1rem;
+      font-weight: 600;
+      margin-bottom: 2px;
+    }
+
+    .card-description {
+      font-size: 0.83rem;
+      color: var(--muted-color);
+    }
+
+    .card-feedback {
+      font-size: 1.3rem;
+      flex-shrink: 0;
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+
+    .event-card.correct   .card-feedback,
+    .event-card.incorrect .card-feedback { opacity: 1; }
+
+    .move-btn {
+      background: none;
+      border: 2px solid var(--muted-color);
+      border-radius: 6px;
+      color: var(--muted-color);
+      width: 32px;
+      height: 32px;
+      font-size: 0.9rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      transition: border-color 0.2s, color 0.2s, background-color 0.2s;
+    }
+
+    .move-btn:hover {
+      border-color: var(--accent-color);
+      color: var(--accent-color);
+      background-color: rgba(233, 69, 96, 0.1);
+    }
+
+    .move-btn:disabled {
+      opacity: 0.2;
+      cursor: default;
+      pointer-events: none;
+    }
+
+    .move-btns {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      flex-shrink: 0;
+    }
+
+    .actions {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      justify-content: center;
+      margin-bottom: 24px;
+    }
+
+    .btn {
+      padding: 10px 26px;
+      border: none;
+      border-radius: 8px;
+      font-size: 0.95rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background-color 0.2s, transform 0.1s;
+    }
+
+    .btn:active { transform: scale(0.97); }
+
+    .btn-primary {
+      background-color: var(--accent-color);
+      color: #fff;
+    }
+
+    .btn-primary:hover { background-color: var(--accent-hover); }
+
+    .btn-secondary {
+      background-color: transparent;
+      color: var(--text-color);
+      border: 2px solid var(--muted-color);
+    }
+
+    .btn-secondary:hover {
+      border-color: var(--text-color);
+      background-color: rgba(255,255,255,0.05);
+    }
+
+    #score-display {
+      text-align: center;
+      font-size: 1rem;
+      color: var(--muted-color);
+      min-height: 1.4em;
+      margin-bottom: 16px;
+      transition: color 0.3s;
+    }
+
+    #congrats {
+      display: none;
+      background-color: #1a4d32;
+      border: 2px solid var(--correct-color);
+      border-radius: var(--card-radius);
+      padding: 22px;
+      text-align: center;
+      animation: pop-in 0.4s ease;
+    }
+
+    #congrats h2 {
+      color: var(--correct-color);
+      font-size: 1.5rem;
+      margin-bottom: 8px;
+    }
+
+    #congrats p {
+      color: var(--text-color);
+      font-size: 0.95rem;
+    }
+
+    @keyframes pop-in {
+      0%   { transform: scale(0.8); opacity: 0; }
+      100% { transform: scale(1);   opacity: 1; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>How a City Grows</h1>
+    <p class="subtitle">Put these steps in the right order. Use the arrows to move each card up or down.</p>
+  </header>
+
+  <main>
+
+    <ul id="timeline-list">
+
+      <li class="event-card" data-order="1">
+        <div class="move-btns">
+          <button class="move-btn move-up"   aria-label="Move up">&#9650;</button>
+          <button class="move-btn move-down" aria-label="Move down">&#9660;</button>
+        </div>
+        <div class="position-label">1</div>
+        <div class="card-content">
+          <div class="card-title">A few people settle near water or land.</div>
+          <div class="card-description">A small group of people find a good spot to live.</div>
+        </div>
+        <div class="card-feedback">&#10003;</div>
+      </li>
+
+      <li class="event-card" data-order="2">
+        <div class="move-btns">
+          <button class="move-btn move-up"   aria-label="Move up">&#9650;</button>
+          <button class="move-btn move-down" aria-label="Move down">&#9660;</button>
+        </div>
+        <div class="position-label">2</div>
+        <div class="card-content">
+          <div class="card-title">More people arrive to trade and farm.</div>
+          <div class="card-description">A market and small shops are set up. A village forms.</div>
+        </div>
+        <div class="card-feedback">&#10003;</div>
+      </li>
+
+      <li class="event-card" data-order="3">
+        <div class="move-btns">
+          <button class="move-btn move-up"   aria-label="Move up">&#9650;</button>
+          <button class="move-btn move-down" aria-label="Move down">&#9660;</button>
+        </div>
+        <div class="position-label">3</div>
+        <div class="card-content">
+          <div class="card-title">Factories are built. Workers move in for jobs.</div>
+          <div class="card-description">Industry brings many new people. The town grows fast.</div>
+        </div>
+        <div class="card-feedback">&#10003;</div>
+      </li>
+
+      <li class="event-card" data-order="4">
+        <div class="move-btns">
+          <button class="move-btn move-up"   aria-label="Move up">&#9650;</button>
+          <button class="move-btn move-down" aria-label="Move down">&#9660;</button>
+        </div>
+        <div class="position-label">4</div>
+        <div class="card-content">
+          <div class="card-title">Schools, hospitals, and roads are built.</div>
+          <div class="card-description">Services are added to look after the growing population.</div>
+        </div>
+        <div class="card-feedback">&#10003;</div>
+      </li>
+
+      <li class="event-card" data-order="5">
+        <div class="move-btns">
+          <button class="move-btn move-up"   aria-label="Move up">&#9650;</button>
+          <button class="move-btn move-down" aria-label="Move down">&#9660;</button>
+        </div>
+        <div class="position-label">5</div>
+        <div class="card-content">
+          <div class="card-title">The city gets very big. Traffic and pollution increase.</div>
+          <div class="card-description">More cars and buildings cause problems for the environment.</div>
+        </div>
+        <div class="card-feedback">&#10003;</div>
+      </li>
+
+      <li class="event-card" data-order="6">
+        <div class="move-btns">
+          <button class="move-btn move-up"   aria-label="Move up">&#9650;</button>
+          <button class="move-btn move-down" aria-label="Move down">&#9660;</button>
+        </div>
+        <div class="position-label">6</div>
+        <div class="card-content">
+          <div class="card-title">The city makes plans to be more sustainable.</div>
+          <div class="card-description">New parks, public transport, and clean energy help the city look after the environment.</div>
+        </div>
+        <div class="card-feedback">&#10003;</div>
+      </li>
+
+    </ul>
+
+    <div id="score-display"></div>
+
+    <div class="actions">
+      <button class="btn btn-primary"   id="btn-check">Check Order</button>
+      <button class="btn btn-secondary" id="btn-reset">Reset / Shuffle</button>
+    </div>
+
+    <div id="congrats">
+      <h2>Correct! Well done!</h2>
+      <p>You put all the steps in the right order. Great work!</p>
+    </div>
+
+  </main>
+
+  <script>
+    var CARD_COUNT = 6;
+
+    var list = document.getElementById('timeline-list');
+    var btnCheck = document.getElementById('btn-check');
+    var btnReset = document.getElementById('btn-reset');
+    var scoreDisplay = document.getElementById('score-display');
+    var congrats = document.getElementById('congrats');
+
+    function shuffleList() {
+      var items = getCards();
+      var i = items.length;
+      while (i > 1) {
+        i--;
+        var j = Math.floor(Math.random() * (i + 1));
+        var temp = items[i];
+        items[i] = items[j];
+        items[j] = temp;
+      }
+      for (var k = 0; k < items.length; k++) {
+        list.appendChild(items[k]);
+      }
+      updatePositionLabels();
+      clearFeedback();
+    }
+
+    function getCards() {
+      var nodes = list.querySelectorAll('.event-card');
+      var arr = [];
+      for (var i = 0; i < nodes.length; i++) {
+        arr.push(nodes[i]);
+      }
+      return arr;
+    }
+
+    function updatePositionLabels() {
+      var cards = getCards();
+      for (var i = 0; i < cards.length; i++) {
+        var label = cards[i].querySelector('.position-label');
+        if (label) {
+          label.textContent = i + 1;
+        }
+      }
+      updateMoveButtons();
+    }
+
+    function updateMoveButtons() {
+      var cards = getCards();
+      for (var i = 0; i < cards.length; i++) {
+        var upBtn   = cards[i].querySelector('.move-up');
+        var downBtn = cards[i].querySelector('.move-down');
+        if (upBtn)   { upBtn.disabled   = (i === 0); }
+        if (downBtn) { downBtn.disabled = (i === cards.length - 1); }
+      }
+    }
+
+    function clearFeedback() {
+      var cards = getCards();
+      for (var i = 0; i < cards.length; i++) {
+        cards[i].classList.remove('correct', 'incorrect');
+        var fb = cards[i].querySelector('.card-feedback');
+        if (fb) { fb.innerHTML = '&#10003;'; }
+      }
+      scoreDisplay.textContent = '';
+      congrats.style.display = 'none';
+    }
+
+    function moveCard(card, direction) {
+      clearFeedback();
+      if (direction === 'up') {
+        var prev = card.previousElementSibling;
+        if (prev) { list.insertBefore(card, prev); }
+      } else {
+        var next = card.nextElementSibling;
+        if (next) { list.insertBefore(next, card); }
+      }
+      updatePositionLabels();
+    }
+
+    function checkOrder() {
+      var cards = getCards();
+      var correctCount = 0;
+
+      for (var i = 0; i < cards.length; i++) {
+        var card = cards[i];
+        var correctPos = parseInt(card.getAttribute('data-order'), 10);
+        var currentPos = i + 1;
+        var fb = card.querySelector('.card-feedback');
+
+        if (currentPos === correctPos) {
+          card.classList.add('correct');
+          card.classList.remove('incorrect');
+          if (fb) { fb.innerHTML = '&#10003;'; }
+          correctCount++;
+        } else {
+          card.classList.add('incorrect');
+          card.classList.remove('correct');
+          if (fb) { fb.innerHTML = '&#10007;'; }
+        }
+      }
+
+      scoreDisplay.textContent = correctCount + ' of ' + cards.length + ' in the correct position.';
+
+      if (correctCount === cards.length) {
+        congrats.style.display = 'block';
+        scoreDisplay.textContent = '';
+      }
+    }
+
+    list.addEventListener('click', function (event) {
+      var target = event.target;
+      while (target && target !== list) {
+        if (target.classList && target.classList.contains('move-up')) {
+          moveCard(target.closest('.event-card'), 'up');
+          return;
+        }
+        if (target.classList && target.classList.contains('move-down')) {
+          moveCard(target.closest('.event-card'), 'down');
+          return;
+        }
+        target = target.parentElement;
+      }
+    });
+
+    btnCheck.addEventListener('click', function () { checkOrder(); });
+    btnReset.addEventListener('click', function () { shuffleList(); });
+
+    shuffleList();
+  </script>
+</body>
+</html>

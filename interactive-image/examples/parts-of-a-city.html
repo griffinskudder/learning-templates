@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Parts of a City</title>
+  <style>
+    /* ============================================================
+       CUSTOMIZATION ZONE
+    ============================================================ */
+    :root {
+      --accent:       #2980b9;
+      --accent-light: #3498db;
+      --popup-bg:     #1a1a2e;
+      --popup-text:   #eaeaea;
+      --btn-text:     #ffffff;
+      --overlay-bg:   rgba(0,0,0,.55);
+      --page-bg:      #0d0d0d;
+      --font-title:   Georgia, serif;
+      --font-body:    'Segoe UI', Arial, sans-serif;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: var(--font-body);
+      background: var(--page-bg);
+      color: var(--popup-text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    header {
+      width: 100%;
+      padding: 1.2rem 2rem;
+      text-align: center;
+      letter-spacing: .06em;
+      text-transform: uppercase;
+      font-family: var(--font-title);
+      font-size: 1.5rem;
+      border-bottom: 2px solid var(--accent);
+      background: var(--page-bg);
+    }
+
+    .image-wrap {
+      position: relative;
+      width: 900px;
+      max-width: 98vw;
+      margin: 2rem auto;
+    }
+
+    .bg-image {
+      display: block;
+      width: 100%;
+      height: auto;
+      border: 3px solid var(--accent);
+      border-radius: 4px;
+    }
+
+    .image-wrap::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(255,255,255,.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,.04) 1px, transparent 1px);
+      background-size: 40px 40px;
+      pointer-events: none;
+      border-radius: 4px;
+    }
+
+    .pin-btn {
+      position: absolute;
+      transform: translate(-50%, -50%);
+      cursor: pointer;
+      border: none;
+      background: var(--accent);
+      color: var(--btn-text);
+      font-family: var(--font-body);
+      font-size: .75rem;
+      font-weight: bold;
+      letter-spacing: .06em;
+      text-transform: uppercase;
+      padding: .45rem .9rem;
+      border-radius: 3px;
+      box-shadow: 0 2px 8px rgba(0,0,0,.6);
+      transition: background .2s, transform .15s;
+      white-space: nowrap;
+    }
+    .pin-btn::after {
+      content: '';
+      position: absolute;
+      bottom: -7px;
+      left: 50%;
+      transform: translateX(-50%);
+      border: 7px solid transparent;
+      border-top-color: var(--accent);
+      border-bottom: none;
+    }
+    .pin-btn:hover {
+      background: var(--accent-light);
+      transform: translate(-50%, -50%) scale(1.07);
+    }
+    .pin-btn:hover::after {
+      border-top-color: var(--accent-light);
+    }
+
+    .popup {
+      display: none;
+      position: absolute;
+      z-index: 10;
+      width: 260px;
+      background: var(--popup-bg);
+      border: 2px solid var(--accent);
+      border-radius: 6px;
+      box-shadow: 0 8px 30px rgba(0,0,0,.7);
+      overflow: hidden;
+      animation: popIn .2s ease;
+    }
+    .popup.active { display: block; }
+
+    @keyframes popIn {
+      from { opacity: 0; transform: scale(.92); }
+      to   { opacity: 1; transform: scale(1);   }
+    }
+
+    .popup-header {
+      background: var(--accent);
+      padding: .6rem 1rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .popup-header h2 {
+      font-family: var(--font-title);
+      font-size: 1rem;
+      letter-spacing: .05em;
+    }
+    .close-btn {
+      background: none;
+      border: none;
+      color: #fff;
+      font-size: 1.2rem;
+      line-height: 1;
+      cursor: pointer;
+      padding: 0 .2rem;
+    }
+    .popup-body {
+      padding: .8rem 1rem 1rem;
+      font-size: .88rem;
+      line-height: 1.6;
+    }
+
+    footer {
+      margin-top: auto;
+      padding: 1rem;
+      font-size: .75rem;
+      opacity: .4;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+
+<header>Parts of a City</header>
+
+<div class="image-wrap">
+
+  <!-- Replace src with a photo of a city bird's-eye view or city diagram -->
+  <img class="bg-image"
+       src="placeholder.svg"
+       alt="A city from above"
+       onerror="this.src=this.getAttribute('data-fallback')"
+       data-fallback="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='900' height='500'%3E%3Crect width='900' height='500' fill='%23162032'/%3E%3Ctext x='50%25' y='48%25' font-family='Georgia' font-size='22' fill='%232980b9' text-anchor='middle' dominant-baseline='middle'%3EAdd a city photo here%3C/text%3E%3Ctext x='50%25' y='57%25' font-family='Segoe UI' font-size='13' fill='%23667799' text-anchor='middle' dominant-baseline='middle'%3Ee.g. src=%22city.jpg%22%3C/text%3E%3C/svg%3E">
+
+  <!-- Button 1: City Centre (CBD) -->
+  <button class="pin-btn"
+          data-popup="popup1"
+          style="top: 35%; left: 50%;">
+    City Centre
+  </button>
+
+  <!-- Button 2: Suburbs -->
+  <button class="pin-btn"
+          data-popup="popup2"
+          style="top: 60%; left: 25%;">
+    Suburbs
+  </button>
+
+  <!-- Button 3: Factories -->
+  <button class="pin-btn"
+          data-popup="popup3"
+          style="top: 25%; left: 75%;">
+    Factories
+  </button>
+
+  <!-- Button 4: Parks -->
+  <button class="pin-btn"
+          data-popup="popup4"
+          style="top: 65%; left: 70%;">
+    Parks
+  </button>
+
+  <!-- Button 5: Transport -->
+  <button class="pin-btn"
+          data-popup="popup5"
+          style="top: 50%; left: 35%;">
+    Transport
+  </button>
+
+  <!-- Popup 1: City Centre -->
+  <div class="popup" id="popup1" style="top: 5%; left: 25%;">
+    <div class="popup-header">
+      <h2>City Centre (CBD)</h2>
+      <button class="close-btn" aria-label="Close">&#x2715;</button>
+    </div>
+    <div class="popup-body">
+      <p>The <strong>CBD</strong> is the busy centre of the city.</p>
+      <p>It has tall buildings, shops, offices, and transport hubs.</p>
+      <p>Most people come here to work during the day.</p>
+    </div>
+  </div>
+
+  <!-- Popup 2: Suburbs -->
+  <div class="popup" id="popup2" style="top: 30%; left: 5%;">
+    <div class="popup-header">
+      <h2>Suburbs</h2>
+      <button class="close-btn" aria-label="Close">&#x2715;</button>
+    </div>
+    <div class="popup-body">
+      <p><strong>Suburbs</strong> are areas around the edge of the city.</p>
+      <p>People live here in houses and flats.</p>
+      <p>They travel to the city centre for work or school.</p>
+    </div>
+  </div>
+
+  <!-- Popup 3: Factories -->
+  <div class="popup" id="popup3" style="top: 5%; left: 48%;">
+    <div class="popup-header">
+      <h2>Factories</h2>
+      <button class="close-btn" aria-label="Close">&#x2715;</button>
+    </div>
+    <div class="popup-body">
+      <p><strong>Factories</strong> make goods and give people jobs.</p>
+      <p>They can cause air and water pollution near where they are built.</p>
+      <p>Many cities try to keep factories away from homes.</p>
+    </div>
+  </div>
+
+  <!-- Popup 4: Parks -->
+  <div class="popup" id="popup4" style="top: 35%; left: 45%;">
+    <div class="popup-header">
+      <h2>Parks</h2>
+      <button class="close-btn" aria-label="Close">&#x2715;</button>
+    </div>
+    <div class="popup-body">
+      <p><strong>Parks</strong> are green spaces in the city.</p>
+      <p>They help clean the air and cool the city down.</p>
+      <p>They give people places to rest, play, and relax.</p>
+    </div>
+  </div>
+
+  <!-- Popup 5: Transport -->
+  <div class="popup" id="popup5" style="top: 20%; left: 10%;">
+    <div class="popup-header">
+      <h2>Transport</h2>
+      <button class="close-btn" aria-label="Close">&#x2715;</button>
+    </div>
+    <div class="popup-body">
+      <p><strong>Transport</strong> includes roads, trains, and buses.</p>
+      <p>Good transport helps people move around the city.</p>
+      <p>Too many cars can cause traffic jams and pollution.</p>
+    </div>
+  </div>
+
+</div>
+
+<footer>Parts of a City &mdash; Year 8 Geography</footer>
+
+<script>
+  var buttons = document.querySelectorAll('.pin-btn');
+  var popups  = document.querySelectorAll('.popup');
+
+  function closeAll() {
+    popups.forEach(function(p) { p.classList.remove('active'); });
+  }
+
+  buttons.forEach(function(btn) {
+    btn.addEventListener('click', function(e) {
+      e.stopPropagation();
+      var target = document.getElementById(btn.dataset.popup);
+      var isOpen = target.classList.contains('active');
+      closeAll();
+      if (!isOpen) target.classList.add('active');
+    });
+  });
+
+  document.querySelectorAll('.close-btn').forEach(function(cb) {
+    cb.addEventListener('click', function(e) {
+      e.stopPropagation();
+      closeAll();
+    });
+  });
+
+  document.addEventListener('click', closeAll);
+</script>
+
+</body>
+</html>

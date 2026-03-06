@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Big Cities of Australia and the USA</title>
+  <style>
+    /* ============================================================
+       CUSTOMIZATION ZONE
+    ============================================================ */
+    :root {
+      --ocean-color: #0d2b45;
+      --land-color: #2d6a4f;
+      --land-border: #1b4332;
+      --marker-color: #f4d03f;
+      --marker-border: #b7950b;
+      --marker-size: 18px;
+      --popup-bg: #1a1a2e;
+      --popup-border: #f4d03f;
+      --popup-title-color: #f4d03f;
+      --popup-text-color: #d0d0d0;
+      --page-bg: #0a0a1a;
+      --heading-color: #f4d03f;
+      --font-family: Georgia, 'Times New Roman', serif;
+    }
+    /* ============================================================ */
+
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--page-bg);
+      color: var(--popup-text-color);
+      font-family: var(--font-family);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 24px 16px 40px;
+    }
+
+    h1 {
+      color: var(--heading-color);
+      font-size: clamp(1.4rem, 3vw, 2.2rem);
+      margin-bottom: 6px;
+      text-align: center;
+      letter-spacing: 0.04em;
+    }
+
+    .subtitle {
+      color: var(--popup-text-color);
+      font-size: 0.95rem;
+      margin-bottom: 20px;
+      text-align: center;
+      opacity: 0.75;
+    }
+
+    .map-wrapper {
+      position: relative;
+      width: 100%;
+      max-width: 860px;
+    }
+
+    .map-area {
+      position: relative;
+      width: 100%;
+      padding-top: 56.25%;
+      background-color: var(--ocean-color);
+      border-radius: 10px;
+      overflow: hidden;
+      border: 2px solid #1a3a5c;
+      box-shadow: 0 0 40px rgba(0, 100, 200, 0.25);
+    }
+
+    .map-area > * {
+      position: absolute;
+    }
+
+    .map-area::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image:
+        repeating-linear-gradient(to right, rgba(255,255,255,0.04) 0px, rgba(255,255,255,0.04) 1px, transparent 1px, transparent 12.5%),
+        repeating-linear-gradient(to bottom, rgba(255,255,255,0.04) 0px, rgba(255,255,255,0.04) 1px, transparent 1px, transparent 16.67%);
+      z-index: 0;
+    }
+
+    .continent {
+      background-color: var(--land-color);
+      border: 1.5px solid var(--land-border);
+      position: absolute;
+      z-index: 1;
+    }
+
+    .continent.north-america { width: 14%; height: 28%; top: 10%; left: 8%; border-radius: 30% 20% 45% 15% / 20% 30% 40% 35%; }
+    .continent.central-america { width: 4%; height: 9%; top: 36%; left: 17%; border-radius: 40% 30% 50% 20%; }
+    .continent.south-america { width: 10%; height: 26%; top: 44%; left: 14%; border-radius: 25% 35% 40% 20% / 15% 20% 45% 30%; }
+    .continent.europe { width: 8%; height: 16%; top: 8%; left: 43%; border-radius: 30% 40% 25% 35% / 35% 20% 40% 30%; }
+    .continent.africa { width: 11%; height: 28%; top: 24%; left: 44%; border-radius: 20% 25% 40% 30% / 10% 15% 50% 20%; }
+    .continent.middle-east { width: 6%; height: 12%; top: 22%; left: 53%; border-radius: 15% 30% 40% 20%; }
+    .continent.asia { width: 26%; height: 28%; top: 5%; left: 52%; border-radius: 20% 25% 30% 15% / 25% 20% 35% 30%; }
+    .continent.southeast-asia { width: 8%; height: 14%; top: 30%; left: 68%; border-radius: 25% 40% 50% 20%; }
+    .continent.australia { width: 10%; height: 15%; top: 58%; left: 72%; border-radius: 30% 35% 40% 25% / 25% 30% 45% 35%; }
+    .continent.greenland { width: 5%; height: 10%; top: 2%; left: 22%; border-radius: 35% 40% 30% 25%; opacity: 0.8; }
+    .continent.antarctica { width: 60%; height: 5%; bottom: 0; left: 20%; border-radius: 30% 30% 0 0 / 80% 80% 0 0; opacity: 0.6; }
+
+    .marker {
+      width: var(--marker-size);
+      height: var(--marker-size);
+      background-color: var(--marker-color);
+      border: 2.5px solid var(--marker-border);
+      border-radius: 50%;
+      cursor: pointer;
+      z-index: 10;
+      transform: translate(-50%, -50%);
+      animation: pulse 2s ease-in-out infinite;
+      transition: transform 0.15s ease;
+    }
+
+    .marker:hover {
+      transform: translate(-50%, -50%) scale(1.3);
+    }
+
+    @keyframes pulse {
+      0%   { box-shadow: 0 0 0 0 rgba(244, 208, 63, 0.7); }
+      60%  { box-shadow: 0 0 0 10px rgba(244, 208, 63, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(244, 208, 63, 0); }
+    }
+
+    .marker:nth-child(2) { animation-delay: 0.5s; }
+    .marker:nth-child(3) { animation-delay: 1.0s; }
+    .marker:nth-child(4) { animation-delay: 1.5s; }
+    .marker:nth-child(5) { animation-delay: 0.25s; }
+    .marker:nth-child(6) { animation-delay: 0.75s; }
+
+    .popup {
+      position: fixed;
+      display: none;
+      background: var(--popup-bg);
+      border: 2px solid var(--popup-border);
+      border-radius: 8px;
+      padding: 18px 20px 16px;
+      max-width: 280px;
+      width: 90vw;
+      z-index: 100;
+      box-shadow: 0 8px 30px rgba(0,0,0,0.6);
+      animation: popIn 0.18s ease;
+    }
+
+    .popup.active {
+      display: block;
+    }
+
+    @keyframes popIn {
+      from { opacity: 0; transform: scale(0.88); }
+      to   { opacity: 1; transform: scale(1); }
+    }
+
+    .popup-title {
+      color: var(--popup-title-color);
+      font-size: 1.1rem;
+      font-weight: bold;
+      margin-bottom: 8px;
+      padding-right: 24px;
+    }
+
+    .popup-desc {
+      color: var(--popup-text-color);
+      font-size: 0.9rem;
+      line-height: 1.6;
+    }
+
+    .popup-close {
+      position: absolute;
+      top: 10px;
+      right: 12px;
+      background: none;
+      border: none;
+      color: var(--popup-title-color);
+      font-size: 1.2rem;
+      cursor: pointer;
+      line-height: 1;
+      padding: 0;
+      opacity: 0.8;
+    }
+    .popup-close:hover {
+      opacity: 1;
+    }
+
+    .map-legend {
+      margin-top: 12px;
+      font-size: 0.8rem;
+      color: var(--popup-text-color);
+      opacity: 0.6;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Big Cities of Australia and the USA</h1>
+  <p class="subtitle">Click a marker to learn about each city.</p>
+
+  <div class="map-wrapper">
+    <div class="map-area" id="mapArea">
+
+      <div class="continent north-america"></div>
+      <div class="continent central-america"></div>
+      <div class="continent south-america"></div>
+      <div class="continent europe"></div>
+      <div class="continent africa"></div>
+      <div class="continent middle-east"></div>
+      <div class="continent asia"></div>
+      <div class="continent southeast-asia"></div>
+      <div class="continent australia"></div>
+      <div class="continent greenland"></div>
+      <div class="continent antarctica"></div>
+
+      <!-- Sydney, Australia -->
+      <div class="marker"
+           style="top: 68%; left: 78%;"
+           data-title="Sydney, Australia"
+           data-desc="Sydney is Australia's biggest city. About 5 million people live here. It is on the east coast. Most Australians live near the coast.">
+      </div>
+
+      <!-- Melbourne, Australia -->
+      <div class="marker"
+           style="top: 73%; left: 76%;"
+           data-title="Melbourne, Australia"
+           data-desc="Melbourne is Australia's second biggest city. About 5 million people live here too. It is in the state of Victoria.">
+      </div>
+
+      <!-- Brisbane, Australia -->
+      <div class="marker"
+           style="top: 62%; left: 79%;"
+           data-title="Brisbane, Australia"
+           data-desc="Brisbane is a fast-growing city in Queensland. Many people are moving there from other states. It is getting bigger every year.">
+      </div>
+
+      <!-- New York City, USA -->
+      <div class="marker"
+           style="top: 20%; left: 18%;"
+           data-title="New York City, USA"
+           data-desc="New York City is the biggest city in the USA. About 8 million people live there. It is one of the most well-known cities in the world.">
+      </div>
+
+      <!-- Los Angeles, USA -->
+      <div class="marker"
+           style="top: 25%; left: 11%;"
+           data-title="Los Angeles, USA"
+           data-desc="Los Angeles is in California, on the west coast of the USA. About 4 million people live in the city. It is famous for films and freeways.">
+      </div>
+
+    </div>
+
+    <p class="map-legend">Shapes are simplified — not to exact scale.</p>
+  </div>
+
+  <div class="popup" id="popup">
+    <button class="popup-close" id="popupClose" title="Close">&#x2715;</button>
+    <div class="popup-title" id="popupTitle"></div>
+    <div class="popup-desc" id="popupDesc"></div>
+  </div>
+
+  <script>
+    var popup      = document.getElementById('popup');
+    var popupTitle = document.getElementById('popupTitle');
+    var popupDesc  = document.getElementById('popupDesc');
+    var closeBtn   = document.getElementById('popupClose');
+    var markers    = document.querySelectorAll('.marker');
+
+    markers.forEach(function(marker) {
+      marker.addEventListener('click', function(event) {
+        event.stopPropagation();
+
+        popupTitle.textContent = marker.getAttribute('data-title') || 'Location';
+        popupDesc.textContent  = marker.getAttribute('data-desc')  || 'No description provided.';
+
+        var x = event.clientX + 14;
+        var y = event.clientY + 14;
+        var popupWidth  = 290;
+        var popupHeight = 160;
+
+        if (x + popupWidth > window.innerWidth) {
+          x = event.clientX - popupWidth - 14;
+        }
+        if (y + popupHeight > window.innerHeight) {
+          y = event.clientY - popupHeight - 14;
+        }
+
+        popup.style.left = x + 'px';
+        popup.style.top  = y + 'px';
+
+        popup.classList.add('active');
+      });
+    });
+
+    closeBtn.addEventListener('click', function() {
+      popup.classList.remove('active');
+    });
+
+    document.addEventListener('click', function() {
+      popup.classList.remove('active');
+    });
+
+    popup.addEventListener('click', function(event) {
+      event.stopPropagation();
+    });
+  </script>
+
+</body>
+</html>

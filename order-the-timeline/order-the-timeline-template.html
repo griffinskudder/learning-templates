@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Order the Timeline</title>
+  <style>
+    /* =====================================================
+       CUSTOMIZATION ZONE
+       Change these variables to match your topic/theme.
+    ===================================================== */
+    :root {
+      --bg-color: #1a1a2e;           /* Page background color */
+      --surface-color: #16213e;      /* Card and panel background */
+      --card-color: #0f3460;         /* Default event card color */
+      --accent-color: #e94560;       /* Buttons, highlights */
+      --accent-hover: #c73652;       /* Button hover state */
+      --text-color: #eaeaea;         /* Main text color */
+      --muted-color: #8899aa;        /* Secondary / hint text */
+      --correct-color: #2ecc71;      /* Card color when correct */
+      --incorrect-color: #e74c3c;    /* Card color when incorrect */
+      --font-main: 'Segoe UI', Arial, sans-serif; /* Body font */
+      --card-radius: 10px;           /* Corner rounding on cards */
+      --max-width: 720px;            /* Maximum content width */
+    }
+
+    /* === Base styles === */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      font-family: var(--font-main);
+      min-height: 100vh;
+      padding: 24px 16px 48px;
+    }
+
+    /* === Page header === */
+    header {
+      text-align: center;
+      margin-bottom: 28px;
+    }
+
+    header h1 {
+      font-size: 2rem;
+      letter-spacing: 1px;
+      color: var(--accent-color);
+      margin-bottom: 6px;
+    }
+
+    header p.subtitle {
+      color: var(--muted-color);
+      font-size: 0.95rem;
+    }
+
+    /* === Instructions banner ===
+       Students: delete this entire <div class="instructions"> block when you are done. */
+    .instructions {
+      background-color: #2d2d00;
+      border: 2px dashed #f0c040;
+      border-radius: var(--card-radius);
+      padding: 18px 22px;
+      margin: 0 auto 28px;
+      max-width: var(--max-width);
+      font-size: 0.88rem;
+      line-height: 1.7;
+      color: #f0e080;
+    }
+
+    .instructions strong {
+      display: block;
+      font-size: 1rem;
+      margin-bottom: 8px;
+      color: #f0c040;
+    }
+
+    .instructions ol {
+      padding-left: 20px;
+    }
+
+    .instructions li {
+      margin-bottom: 4px;
+    }
+
+    /* === Main content area === */
+    main {
+      max-width: var(--max-width);
+      margin: 0 auto;
+    }
+
+    /* === Timeline list === */
+    #timeline-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-bottom: 24px;
+    }
+
+    /* === Individual event card === */
+    .event-card {
+      background-color: var(--card-color);
+      border-radius: var(--card-radius);
+      padding: 14px 16px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      transition: background-color 0.4s ease, transform 0.15s ease;
+      border: 2px solid transparent;
+    }
+
+    .event-card.correct {
+      background-color: #1a4d32;
+      border-color: var(--correct-color);
+    }
+
+    .event-card.incorrect {
+      background-color: #4d1a1a;
+      border-color: var(--incorrect-color);
+    }
+
+    /* Position label (1, 2, 3 ...) shown on the left of each card */
+    .position-label {
+      min-width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background-color: var(--accent-color);
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      font-size: 0.9rem;
+      flex-shrink: 0;
+      transition: background-color 0.4s;
+    }
+
+    .event-card.correct  .position-label { background-color: var(--correct-color); }
+    .event-card.incorrect .position-label { background-color: var(--incorrect-color); }
+
+    /* Text content inside card */
+    .card-content {
+      flex: 1;
+    }
+
+    .card-title {
+      font-size: 1rem;
+      font-weight: 600;
+      margin-bottom: 2px;
+    }
+
+    .card-description {
+      font-size: 0.83rem;
+      color: var(--muted-color);
+    }
+
+    /* Feedback icon shown after Check Order */
+    .card-feedback {
+      font-size: 1.3rem;
+      flex-shrink: 0;
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+
+    .event-card.correct   .card-feedback,
+    .event-card.incorrect .card-feedback { opacity: 1; }
+
+    /* === Move buttons (Up / Down) === */
+    .move-btn {
+      background: none;
+      border: 2px solid var(--muted-color);
+      border-radius: 6px;
+      color: var(--muted-color);
+      width: 32px;
+      height: 32px;
+      font-size: 0.9rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      transition: border-color 0.2s, color 0.2s, background-color 0.2s;
+    }
+
+    .move-btn:hover {
+      border-color: var(--accent-color);
+      color: var(--accent-color);
+      background-color: rgba(233, 69, 96, 0.1);
+    }
+
+    .move-btn:disabled {
+      opacity: 0.2;
+      cursor: default;
+      pointer-events: none;
+    }
+
+    .move-btns {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      flex-shrink: 0;
+    }
+
+    /* === Action buttons === */
+    .actions {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      justify-content: center;
+      margin-bottom: 24px;
+    }
+
+    .btn {
+      padding: 10px 26px;
+      border: none;
+      border-radius: 8px;
+      font-size: 0.95rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background-color 0.2s, transform 0.1s;
+    }
+
+    .btn:active { transform: scale(0.97); }
+
+    .btn-primary {
+      background-color: var(--accent-color);
+      color: #fff;
+    }
+
+    .btn-primary:hover { background-color: var(--accent-hover); }
+
+    .btn-secondary {
+      background-color: transparent;
+      color: var(--text-color);
+      border: 2px solid var(--muted-color);
+    }
+
+    .btn-secondary:hover {
+      border-color: var(--text-color);
+      background-color: rgba(255,255,255,0.05);
+    }
+
+    /* === Score display === */
+    #score-display {
+      text-align: center;
+      font-size: 1rem;
+      color: var(--muted-color);
+      min-height: 1.4em;
+      margin-bottom: 16px;
+      transition: color 0.3s;
+    }
+
+    /* === Congratulations message === */
+    #congrats {
+      display: none;
+      background-color: #1a4d32;
+      border: 2px solid var(--correct-color);
+      border-radius: var(--card-radius);
+      padding: 22px;
+      text-align: center;
+      animation: pop-in 0.4s ease;
+    }
+
+    #congrats h2 {
+      color: var(--correct-color);
+      font-size: 1.5rem;
+      margin-bottom: 8px;
+    }
+
+    #congrats p {
+      color: var(--text-color);
+      font-size: 0.95rem;
+    }
+
+    @keyframes pop-in {
+      0%   { transform: scale(0.8); opacity: 0; }
+      100% { transform: scale(1);   opacity: 1; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- =====================================================
+       PAGE HEADER
+       Change the title and subtitle to match your topic.
+  ====================================================== -->
+  <header>
+    <h1>Order the Timeline</h1>
+    <!-- CUSTOMISE: change this subtitle to describe your topic -->
+    <p class="subtitle">Drag the events into the correct chronological order, then check your answer.</p>
+  </header>
+
+  <!-- =====================================================
+       INSTRUCTIONS BANNER
+       Students: delete this entire block when you are done
+       customising the template.
+  ====================================================== -->
+  <div class="instructions">
+    <strong>How to customise this template</strong>
+    <ol>
+      <li>Find the <code>&lt;ul id="timeline-list"&gt;</code> section below and edit the 6 <code>&lt;li&gt;</code> cards.</li>
+      <li>On each card, set <strong>data-order="N"</strong> to indicate its correct position (1 = first, 6 = last).</li>
+      <li>Change the <strong>card-title</strong> to your event name and <strong>card-description</strong> to a short detail or date.</li>
+      <li>Update the page <code>&lt;title&gt;</code>, the <code>&lt;h1&gt;</code> heading, and the subtitle paragraph above.</li>
+      <li>Optionally tweak colours in the <code>:root</code> CUSTOMIZATION ZONE in the <code>&lt;style&gt;</code> block.</li>
+      <li>Delete this yellow instructions box when you are done.</li>
+    </ol>
+  </div>
+
+  <main>
+
+    <!-- =====================================================
+         TIMELINE LIST
+         Each <li> is one event card. Rules:
+           - Keep exactly 6 cards (or update the JS check-count if you change this).
+           - data-order="N" — set N to the CORRECT position (1 to 6).
+           - The cards are shuffled automatically on page load, so the order
+             you write them here does not matter.
+           - card-title: the name/headline of the event.
+           - card-description: optional short detail (date, extra context).
+    ====================================================== -->
+    <ul id="timeline-list">
+
+      <!-- Card 1 — CUSTOMISE: change data-order, card-title, card-description -->
+      <li class="event-card" data-order="1">
+        <div class="move-btns">
+          <button class="move-btn move-up"   aria-label="Move up">&#9650;</button>
+          <button class="move-btn move-down" aria-label="Move down">&#9660;</button>
+        </div>
+        <div class="position-label">1</div>
+        <div class="card-content">
+          <div class="card-title">Step 1: Identify the Problem</div>
+          <div class="card-description">Recognise that a need or challenge exists and define it clearly.</div>
+        </div>
+        <div class="card-feedback">&#10003;</div>
+      </li>
+
+      <!-- Card 2 — CUSTOMISE -->
+      <li class="event-card" data-order="2">
+        <div class="move-btns">
+          <button class="move-btn move-up"   aria-label="Move up">&#9650;</button>
+          <button class="move-btn move-down" aria-label="Move down">&#9660;</button>
+        </div>
+        <div class="position-label">2</div>
+        <div class="card-content">
+          <div class="card-title">Step 2: Research</div>
+          <div class="card-description">Gather information, look at existing solutions, and understand constraints.</div>
+        </div>
+        <div class="card-feedback">&#10003;</div>
+      </li>
+
+      <!-- Card 3 — CUSTOMISE -->
+      <li class="event-card" data-order="3">
+        <div class="move-btns">
+          <button class="move-btn move-up"   aria-label="Move up">&#9650;</button>
+          <button class="move-btn move-down" aria-label="Move down">&#9660;</button>
+        </div>
+        <div class="position-label">3</div>
+        <div class="card-content">
+          <div class="card-title">Step 3: Plan and Design</div>
+          <div class="card-description">Sketch ideas, create prototypes, and decide on the best approach.</div>
+        </div>
+        <div class="card-feedback">&#10003;</div>
+      </li>
+
+      <!-- Card 4 — CUSTOMISE -->
+      <li class="event-card" data-order="4">
+        <div class="move-btns">
+          <button class="move-btn move-up"   aria-label="Move up">&#9650;</button>
+          <button class="move-btn move-down" aria-label="Move down">&#9660;</button>
+        </div>
+        <div class="position-label">4</div>
+        <div class="card-content">
+          <div class="card-title">Step 4: Build / Implement</div>
+          <div class="card-description">Create the solution, write the code, or carry out the plan.</div>
+        </div>
+        <div class="card-feedback">&#10003;</div>
+      </li>
+
+      <!-- Card 5 — CUSTOMISE -->
+      <li class="event-card" data-order="5">
+        <div class="move-btns">
+          <button class="move-btn move-up"   aria-label="Move up">&#9650;</button>
+          <button class="move-btn move-down" aria-label="Move down">&#9660;</button>
+        </div>
+        <div class="position-label">5</div>
+        <div class="card-content">
+          <div class="card-title">Step 5: Test and Evaluate</div>
+          <div class="card-description">Check whether the solution works, gather feedback, and identify improvements.</div>
+        </div>
+        <div class="card-feedback">&#10003;</div>
+      </li>
+
+      <!-- Card 6 — CUSTOMISE -->
+      <li class="event-card" data-order="6">
+        <div class="move-btns">
+          <button class="move-btn move-up"   aria-label="Move up">&#9650;</button>
+          <button class="move-btn move-down" aria-label="Move down">&#9660;</button>
+        </div>
+        <div class="position-label">6</div>
+        <div class="card-content">
+          <div class="card-title">Step 6: Reflect and Iterate</div>
+          <div class="card-description">Review the whole process, document lessons learned, and refine the solution.</div>
+        </div>
+        <div class="card-feedback">&#10003;</div>
+      </li>
+
+    </ul>
+    <!-- end #timeline-list -->
+
+    <!-- Score feedback line -->
+    <div id="score-display"></div>
+
+    <!-- Action buttons -->
+    <div class="actions">
+      <button class="btn btn-primary"   id="btn-check">Check Order</button>
+      <button class="btn btn-secondary" id="btn-reset">Reset / Shuffle</button>
+    </div>
+
+    <!-- Congratulations panel — shown automatically when all cards are correct -->
+    <div id="congrats">
+      <h2>Correct! Well done!</h2>
+      <p>You placed all events in the right order. Great work!</p>
+    </div>
+
+  </main>
+
+  <script>
+    /* =====================================================
+       TIMELINE LOGIC
+       No need to edit this script unless you want to
+       change the number of cards (update CARD_COUNT).
+    ===================================================== */
+
+    var CARD_COUNT = 6; // Update this if you add or remove cards
+
+    var list = document.getElementById('timeline-list');
+    var btnCheck = document.getElementById('btn-check');
+    var btnReset = document.getElementById('btn-reset');
+    var scoreDisplay = document.getElementById('score-display');
+    var congrats = document.getElementById('congrats');
+
+    /* --- Shuffle the list on page load --- */
+    function shuffleList() {
+      var items = getCards();
+      // Fisher-Yates shuffle
+      var i = items.length;
+      while (i > 1) {
+        i--;
+        var j = Math.floor(Math.random() * (i + 1));
+        var temp = items[i];
+        items[i] = items[j];
+        items[j] = temp;
+      }
+      // Re-append in shuffled order
+      for (var k = 0; k < items.length; k++) {
+        list.appendChild(items[k]);
+      }
+      updatePositionLabels();
+      clearFeedback();
+    }
+
+    /* --- Return array of card <li> elements in current DOM order --- */
+    function getCards() {
+      var nodes = list.querySelectorAll('.event-card');
+      var arr = [];
+      for (var i = 0; i < nodes.length; i++) {
+        arr.push(nodes[i]);
+      }
+      return arr;
+    }
+
+    /* --- Refresh the numbered position labels (1, 2, 3 ...) --- */
+    function updatePositionLabels() {
+      var cards = getCards();
+      for (var i = 0; i < cards.length; i++) {
+        var label = cards[i].querySelector('.position-label');
+        if (label) {
+          label.textContent = i + 1;
+        }
+      }
+      updateMoveButtons();
+    }
+
+    /* --- Disable Up on first card and Down on last card --- */
+    function updateMoveButtons() {
+      var cards = getCards();
+      for (var i = 0; i < cards.length; i++) {
+        var upBtn   = cards[i].querySelector('.move-up');
+        var downBtn = cards[i].querySelector('.move-down');
+        if (upBtn)   { upBtn.disabled   = (i === 0); }
+        if (downBtn) { downBtn.disabled = (i === cards.length - 1); }
+      }
+    }
+
+    /* --- Clear all correct/incorrect highlighting --- */
+    function clearFeedback() {
+      var cards = getCards();
+      for (var i = 0; i < cards.length; i++) {
+        cards[i].classList.remove('correct', 'incorrect');
+        var fb = cards[i].querySelector('.card-feedback');
+        if (fb) { fb.innerHTML = '&#10003;'; }
+      }
+      scoreDisplay.textContent = '';
+      congrats.style.display = 'none';
+    }
+
+    /* --- Move a card up or down in the list --- */
+    function moveCard(card, direction) {
+      clearFeedback();
+      if (direction === 'up') {
+        var prev = card.previousElementSibling;
+        if (prev) { list.insertBefore(card, prev); }
+      } else {
+        var next = card.nextElementSibling;
+        if (next) { list.insertBefore(next, card); }
+      }
+      updatePositionLabels();
+    }
+
+    /* --- Check the current order against data-order values --- */
+    function checkOrder() {
+      var cards = getCards();
+      var correctCount = 0;
+
+      for (var i = 0; i < cards.length; i++) {
+        var card = cards[i];
+        var correctPos = parseInt(card.getAttribute('data-order'), 10);
+        var currentPos = i + 1;
+        var fb = card.querySelector('.card-feedback');
+
+        if (currentPos === correctPos) {
+          card.classList.add('correct');
+          card.classList.remove('incorrect');
+          if (fb) { fb.innerHTML = '&#10003;'; } // check mark
+          correctCount++;
+        } else {
+          card.classList.add('incorrect');
+          card.classList.remove('correct');
+          if (fb) { fb.innerHTML = '&#10007;'; } // cross mark
+        }
+      }
+
+      scoreDisplay.textContent = correctCount + ' of ' + cards.length + ' in the correct position.';
+
+      if (correctCount === cards.length) {
+        congrats.style.display = 'block';
+        scoreDisplay.textContent = '';
+      }
+    }
+
+    /* --- Attach Up/Down button listeners using event delegation --- */
+    list.addEventListener('click', function (event) {
+      var target = event.target;
+      // Walk up to find a move-btn in case the click lands on a child element
+      while (target && target !== list) {
+        if (target.classList && target.classList.contains('move-up')) {
+          moveCard(target.closest('.event-card'), 'up');
+          return;
+        }
+        if (target.classList && target.classList.contains('move-down')) {
+          moveCard(target.closest('.event-card'), 'down');
+          return;
+        }
+        target = target.parentElement;
+      }
+    });
+
+    /* --- Action button listeners --- */
+    btnCheck.addEventListener('click', function () { checkOrder(); });
+    btnReset.addEventListener('click', function () { shuffleList(); });
+
+    /* --- Initialise on page load --- */
+    shuffleList();
+  </script>
+</body>
+</html>

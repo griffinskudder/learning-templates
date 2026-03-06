@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Urbanisation – True or False?</title>
+  <style>
+    /* ============================================
+       CUSTOMISATION ZONE
+    ============================================ */
+    :root {
+      --bg-color: #1a1a2e;
+      --card-bg: #16213e;
+      --card-border: #0f3460;
+      --text-color: #e0e0e0;
+      --heading-color: #e94560;
+      --true-color: #4caf50;
+      --false-color: #e94560;
+      --btn-true-bg: #2d6a4f;
+      --btn-false-bg: #6b2737;
+      --font-family: 'Segoe UI', sans-serif;
+      --card-radius: 10px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      font-family: var(--font-family);
+      min-height: 100vh;
+      padding: 2rem 1rem;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+
+    header h1 {
+      color: var(--heading-color);
+      font-size: 2rem;
+      margin-bottom: 0.4rem;
+    }
+
+    header p.subtitle {
+      opacity: 0.65;
+      font-size: 1rem;
+    }
+
+    .quiz-container {
+      max-width: 680px;
+      margin: 0 auto;
+    }
+
+    .statement-card {
+      background: var(--card-bg);
+      border: 2px solid var(--card-border);
+      border-radius: var(--card-radius);
+      padding: 1.25rem 1.5rem;
+      margin-bottom: 1rem;
+      transition: border-color 0.3s;
+    }
+
+    .statement-card.correct  { border-color: var(--true-color); }
+    .statement-card.incorrect { border-color: var(--false-color); }
+
+    .statement-number {
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      opacity: 0.45;
+      margin-bottom: 0.5rem;
+    }
+
+    .statement-text {
+      font-size: 1.1rem;
+      line-height: 1.55;
+      margin-bottom: 1rem;
+    }
+
+    .btn-group {
+      display: flex;
+      gap: 0.75rem;
+    }
+
+    .btn-true,
+    .btn-false {
+      padding: 0.5rem 1.4rem;
+      border: none;
+      border-radius: 6px;
+      font-size: 0.95rem;
+      font-weight: bold;
+      color: #fff;
+      cursor: pointer;
+      transition: opacity 0.2s, transform 0.1s;
+    }
+
+    .btn-true  { background: var(--btn-true-bg); }
+    .btn-false { background: var(--btn-false-bg); }
+
+    .btn-true:hover,
+    .btn-false:hover {
+      opacity: 0.82;
+      transform: translateY(-1px);
+    }
+
+    .btn-true:disabled,
+    .btn-false:disabled {
+      cursor: default;
+      opacity: 0.45;
+      transform: none;
+    }
+
+    .feedback {
+      margin-top: 0.75rem;
+      font-weight: bold;
+      font-size: 0.95rem;
+      min-height: 1.2em;
+    }
+
+    .feedback.correct-msg  { color: var(--true-color); }
+    .feedback.incorrect-msg { color: var(--false-color); }
+
+    .explanation {
+      display: none;
+      margin-top: 0.4rem;
+      font-size: 0.85rem;
+      opacity: 0.75;
+      line-height: 1.5;
+    }
+
+    .score-area {
+      max-width: 680px;
+      margin: 1.5rem auto 0;
+      text-align: center;
+      background: var(--card-bg);
+      border: 2px solid var(--card-border);
+      border-radius: var(--card-radius);
+      padding: 1.5rem;
+    }
+
+    .score-display {
+      font-size: 2.2rem;
+      font-weight: bold;
+      color: var(--heading-color);
+    }
+
+    .score-label {
+      opacity: 0.6;
+      margin-top: 0.25rem;
+      font-size: 0.9rem;
+    }
+
+    .reset-btn {
+      margin-top: 1rem;
+      padding: 0.5rem 1.5rem;
+      background: transparent;
+      border: 2px solid var(--heading-color);
+      color: var(--heading-color);
+      border-radius: 6px;
+      font-size: 0.9rem;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background 0.2s, color 0.2s;
+    }
+
+    .reset-btn:hover {
+      background: var(--heading-color);
+      color: #fff;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>True or False?</h1>
+    <p class="subtitle">Geography &mdash; Urbanisation &mdash; click True or False for each statement</p>
+  </header>
+
+  <div class="quiz-container" id="quiz-container">
+
+    <!-- Statement 1 — TRUE -->
+    <div class="statement-card" data-answer="true">
+      <p class="statement-number">Statement 1</p>
+      <p class="statement-text">More than half of all people in the world now live in a city.</p>
+      <div class="btn-group">
+        <button class="btn-true">True</button>
+        <button class="btn-false">False</button>
+      </div>
+      <p class="feedback"></p>
+      <p class="explanation">True &mdash; for the first time in history, more people live in cities than in the countryside.</p>
+    </div>
+
+    <!-- Statement 2 — TRUE -->
+    <div class="statement-card" data-answer="true">
+      <p class="statement-number">Statement 2</p>
+      <p class="statement-text">Australia is one of the most urbanised countries in the world.</p>
+      <div class="btn-group">
+        <button class="btn-true">True</button>
+        <button class="btn-false">False</button>
+      </div>
+      <p class="feedback"></p>
+      <p class="explanation">True &mdash; about 9 out of every 10 Australians live in a city or large town.</p>
+    </div>
+
+    <!-- Statement 3 — FALSE -->
+    <div class="statement-card" data-answer="false">
+      <p class="statement-number">Statement 3</p>
+      <p class="statement-text">Urbanisation means people move from cities to the countryside.</p>
+      <div class="btn-group">
+        <button class="btn-true">True</button>
+        <button class="btn-false">False</button>
+      </div>
+      <p class="feedback"></p>
+      <p class="explanation">False &mdash; urbanisation means people move FROM the countryside TO cities. Cities get bigger.</p>
+    </div>
+
+    <!-- Statement 4 — TRUE -->
+    <div class="statement-card" data-answer="true">
+      <p class="statement-number">Statement 4</p>
+      <p class="statement-text">Cities can cause pollution because of cars and factories.</p>
+      <div class="btn-group">
+        <button class="btn-true">True</button>
+        <button class="btn-false">False</button>
+      </div>
+      <p class="feedback"></p>
+      <p class="explanation">True &mdash; cars and factories in cities produce gases that pollute the air.</p>
+    </div>
+
+    <!-- Statement 5 — FALSE -->
+    <div class="statement-card" data-answer="false">
+      <p class="statement-number">Statement 5</p>
+      <p class="statement-text">Australia's cities are spread evenly across the whole country.</p>
+      <div class="btn-group">
+        <button class="btn-true">True</button>
+        <button class="btn-false">False</button>
+      </div>
+      <p class="feedback"></p>
+      <p class="explanation">False &mdash; most Australian cities are on the coast. The middle of the country has very few people.</p>
+    </div>
+
+  </div>
+
+  <div class="score-area" id="score-area">
+    <p class="score-display" id="score-display">0 / 0</p>
+    <p class="score-label" id="score-label">Answer the statements above</p>
+    <button class="reset-btn" id="reset-btn">Try Again</button>
+  </div>
+
+  <script>
+    var score = 0;
+    var answered = 0;
+    var cards = document.querySelectorAll('.statement-card');
+    var totalQuestions = cards.length;
+
+    function updateScore() {
+      var display = document.getElementById('score-display');
+      var label = document.getElementById('score-label');
+      display.textContent = score + ' / ' + totalQuestions;
+
+      if (answered === totalQuestions) {
+        if (score === totalQuestions) {
+          label.textContent = 'Perfect score! Well done.';
+        } else if (score >= totalQuestions / 2) {
+          label.textContent = 'Good work! Review any you got wrong.';
+        } else {
+          label.textContent = 'Keep practising &mdash; read the explanations above.';
+        }
+      } else {
+        label.textContent = answered + ' of ' + totalQuestions + ' answered';
+      }
+    }
+
+    cards.forEach(function(card, index) {
+      var correctAnswer = card.getAttribute('data-answer');
+      var trueBtn = card.querySelector('.btn-true');
+      var falseBtn = card.querySelector('.btn-false');
+      var feedbackEl = card.querySelector('.feedback');
+      var explanationEl = card.querySelector('.explanation');
+
+      card.querySelector('.statement-number').textContent = 'Statement ' + (index + 1);
+
+      trueBtn.addEventListener('click', function() {
+        checkAnswer('true', correctAnswer, card, feedbackEl, explanationEl, trueBtn, falseBtn);
+      });
+
+      falseBtn.addEventListener('click', function() {
+        checkAnswer('false', correctAnswer, card, feedbackEl, explanationEl, trueBtn, falseBtn);
+      });
+    });
+
+    function checkAnswer(chosen, correct, card, feedbackEl, explanationEl, trueBtn, falseBtn) {
+      trueBtn.disabled = true;
+      falseBtn.disabled = true;
+      answered++;
+
+      if (chosen === correct) {
+        score++;
+        card.classList.add('correct');
+        feedbackEl.textContent = 'Correct!';
+        feedbackEl.className = 'feedback correct-msg';
+      } else {
+        card.classList.add('incorrect');
+        var correctWord = correct.charAt(0).toUpperCase() + correct.slice(1);
+        feedbackEl.textContent = 'Incorrect \u2014 the answer is ' + correctWord + '.';
+        feedbackEl.className = 'feedback incorrect-msg';
+      }
+
+      if (explanationEl) {
+        explanationEl.style.display = 'block';
+      }
+
+      updateScore();
+    }
+
+    document.getElementById('reset-btn').addEventListener('click', function() {
+      window.location.reload();
+    });
+
+    updateScore();
+  </script>
+
+</body>
+</html>

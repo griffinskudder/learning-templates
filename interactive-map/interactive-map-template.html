@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Interactive World Map</title>
+  <style>
+    /* ============================================================
+       CUSTOMIZATION ZONE
+       Edit the values below to change the look of your map.
+    ============================================================ */
+    :root {
+      --ocean-color: #0d2b45;          /* Background "ocean" color of the map */
+      --land-color: #2d6a4f;           /* Color of the continent shapes */
+      --land-border: #1b4332;          /* Outline color around continent shapes */
+      --marker-color: #f4d03f;         /* Color of the location marker dots */
+      --marker-border: #b7950b;        /* Border color around markers */
+      --marker-size: 18px;             /* Diameter of each marker dot */
+      --popup-bg: #1a1a2e;             /* Background color of the info popup */
+      --popup-border: #f4d03f;         /* Border color of the info popup */
+      --popup-title-color: #f4d03f;    /* Color of the popup title text */
+      --popup-text-color: #d0d0d0;     /* Color of the popup body text */
+      --page-bg: #0a0a1a;             /* Page background color behind the map */
+      --heading-color: #f4d03f;        /* Color of the main page heading */
+      --font-family: Georgia, 'Times New Roman', serif; /* Font used across the page */
+    }
+    /* ============================================================ */
+
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--page-bg);
+      color: var(--popup-text-color);
+      font-family: var(--font-family);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 24px 16px 40px;
+    }
+
+    h1 {
+      color: var(--heading-color);
+      font-size: clamp(1.4rem, 3vw, 2.2rem);
+      margin-bottom: 6px;
+      text-align: center;
+      letter-spacing: 0.04em;
+    }
+
+    .subtitle {
+      color: var(--popup-text-color);
+      font-size: 0.95rem;
+      margin-bottom: 20px;
+      text-align: center;
+      opacity: 0.75;
+    }
+
+    /* ---- Setup instructions banner (delete this section when done) ---- */
+    .instructions {
+      background: #1c1c3a;
+      border: 1px solid #4a4a8a;
+      border-radius: 8px;
+      padding: 16px 20px;
+      max-width: 860px;
+      width: 100%;
+      margin-bottom: 22px;
+      font-size: 0.88rem;
+      line-height: 1.7;
+      color: #b0b8d8;
+    }
+    .instructions strong {
+      color: #8888ff;
+    }
+    .instructions code {
+      background: #2a2a50;
+      padding: 1px 5px;
+      border-radius: 3px;
+      font-size: 0.85em;
+      color: #c0d0ff;
+    }
+    .instructions h2 {
+      color: #8888ff;
+      font-size: 1rem;
+      margin-bottom: 8px;
+    }
+    .instructions ol {
+      padding-left: 20px;
+    }
+    .instructions ol li {
+      margin-bottom: 4px;
+    }
+    /* ------------------------------------------------------------------- */
+
+    /* ---- Map container ---- */
+    .map-wrapper {
+      position: relative;
+      width: 100%;
+      max-width: 860px;
+    }
+
+    .map-area {
+      position: relative;
+      width: 100%;
+      /* 16:9 aspect ratio maintained via padding-top trick */
+      padding-top: 56.25%;
+      background-color: var(--ocean-color);
+      border-radius: 10px;
+      overflow: hidden;
+      border: 2px solid #1a3a5c;
+      box-shadow: 0 0 40px rgba(0, 100, 200, 0.25);
+    }
+
+    /* All children of .map-area are positioned inside the padded box */
+    .map-area > * {
+      position: absolute;
+    }
+
+    /* ---- Grid lines (latitude/longitude suggestion) ---- */
+    .map-area::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image:
+        repeating-linear-gradient(
+          to right,
+          rgba(255,255,255,0.04) 0px,
+          rgba(255,255,255,0.04) 1px,
+          transparent 1px,
+          transparent 12.5%
+        ),
+        repeating-linear-gradient(
+          to bottom,
+          rgba(255,255,255,0.04) 0px,
+          rgba(255,255,255,0.04) 1px,
+          transparent 1px,
+          transparent 16.67%
+        );
+      z-index: 0;
+    }
+
+    /* ---- Continent shapes ---- */
+    /*
+      Each continent is an absolutely-positioned div.
+      top/left are percentages of the map area.
+      border-radius creates the irregular landmass shapes.
+      Feel free to adjust size and position to match your map theme.
+    */
+    .continent {
+      background-color: var(--land-color);
+      border: 1.5px solid var(--land-border);
+      position: absolute;
+      z-index: 1;
+    }
+
+    /* North America */
+    .continent.north-america {
+      width: 14%;
+      height: 28%;
+      top: 10%;
+      left: 8%;
+      border-radius: 30% 20% 45% 15% / 20% 30% 40% 35%;
+    }
+
+    /* Central America connector */
+    .continent.central-america {
+      width: 4%;
+      height: 9%;
+      top: 36%;
+      left: 17%;
+      border-radius: 40% 30% 50% 20%;
+    }
+
+    /* South America */
+    .continent.south-america {
+      width: 10%;
+      height: 26%;
+      top: 44%;
+      left: 14%;
+      border-radius: 25% 35% 40% 20% / 15% 20% 45% 30%;
+    }
+
+    /* Europe */
+    .continent.europe {
+      width: 8%;
+      height: 16%;
+      top: 8%;
+      left: 43%;
+      border-radius: 30% 40% 25% 35% / 35% 20% 40% 30%;
+    }
+
+    /* Africa */
+    .continent.africa {
+      width: 11%;
+      height: 28%;
+      top: 24%;
+      left: 44%;
+      border-radius: 20% 25% 40% 30% / 10% 15% 50% 20%;
+    }
+
+    /* Middle East / Arabian peninsula */
+    .continent.middle-east {
+      width: 6%;
+      height: 12%;
+      top: 22%;
+      left: 53%;
+      border-radius: 15% 30% 40% 20%;
+    }
+
+    /* Asia (main body) */
+    .continent.asia {
+      width: 26%;
+      height: 28%;
+      top: 5%;
+      left: 52%;
+      border-radius: 20% 25% 30% 15% / 25% 20% 35% 30%;
+    }
+
+    /* Southeast Asia / Indochina */
+    .continent.southeast-asia {
+      width: 8%;
+      height: 14%;
+      top: 30%;
+      left: 68%;
+      border-radius: 25% 40% 50% 20%;
+    }
+
+    /* Australia */
+    .continent.australia {
+      width: 10%;
+      height: 15%;
+      top: 58%;
+      left: 72%;
+      border-radius: 30% 35% 40% 25% / 25% 30% 45% 35%;
+    }
+
+    /* Greenland */
+    .continent.greenland {
+      width: 5%;
+      height: 10%;
+      top: 2%;
+      left: 22%;
+      border-radius: 35% 40% 30% 25%;
+      opacity: 0.8;
+    }
+
+    /* Antarctica hint */
+    .continent.antarctica {
+      width: 60%;
+      height: 5%;
+      bottom: 0;
+      left: 20%;
+      border-radius: 30% 30% 0 0 / 80% 80% 0 0;
+      opacity: 0.6;
+    }
+
+    /* ---- Markers ---- */
+    /*
+      Each marker is a div with class "marker".
+      Position it with inline style: top and left as percentages.
+      The data-title and data-desc attributes supply the popup content.
+
+      Example:
+        <div class="marker"
+             style="top: 55%; left: 25%;"
+             data-title="Buenos Aires"
+             data-desc="Capital of Argentina, famous for tango.">
+        </div>
+    */
+    .marker {
+      width: var(--marker-size);
+      height: var(--marker-size);
+      background-color: var(--marker-color);
+      border: 2.5px solid var(--marker-border);
+      border-radius: 50%;
+      cursor: pointer;
+      z-index: 10;
+      transform: translate(-50%, -50%);
+      /* Pulsing glow animation */
+      animation: pulse 2s ease-in-out infinite;
+      transition: transform 0.15s ease;
+    }
+
+    .marker:hover {
+      transform: translate(-50%, -50%) scale(1.3);
+    }
+
+    @keyframes pulse {
+      0%   { box-shadow: 0 0 0 0 rgba(244, 208, 63, 0.7); }
+      60%  { box-shadow: 0 0 0 10px rgba(244, 208, 63, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(244, 208, 63, 0); }
+    }
+
+    /* Each marker gets a slightly different pulse delay so they don't all sync */
+    .marker:nth-child(2) { animation-delay: 0.5s; }
+    .marker:nth-child(3) { animation-delay: 1.0s; }
+    .marker:nth-child(4) { animation-delay: 1.5s; }
+    .marker:nth-child(5) { animation-delay: 0.25s; }
+    .marker:nth-child(6) { animation-delay: 0.75s; }
+
+    /* ---- Popup ---- */
+    .popup {
+      position: fixed;         /* Fixed so it doesn't scroll off screen */
+      display: none;
+      background: var(--popup-bg);
+      border: 2px solid var(--popup-border);
+      border-radius: 8px;
+      padding: 18px 20px 16px;
+      max-width: 280px;
+      width: 90vw;
+      z-index: 100;
+      box-shadow: 0 8px 30px rgba(0,0,0,0.6);
+      animation: popIn 0.18s ease;
+    }
+
+    .popup.active {
+      display: block;
+    }
+
+    @keyframes popIn {
+      from { opacity: 0; transform: scale(0.88); }
+      to   { opacity: 1; transform: scale(1); }
+    }
+
+    .popup-title {
+      color: var(--popup-title-color);
+      font-size: 1.1rem;
+      font-weight: bold;
+      margin-bottom: 8px;
+      padding-right: 24px; /* room for close button */
+    }
+
+    .popup-desc {
+      color: var(--popup-text-color);
+      font-size: 0.9rem;
+      line-height: 1.6;
+    }
+
+    .popup-close {
+      position: absolute;
+      top: 10px;
+      right: 12px;
+      background: none;
+      border: none;
+      color: var(--popup-title-color);
+      font-size: 1.2rem;
+      cursor: pointer;
+      line-height: 1;
+      padding: 0;
+      opacity: 0.8;
+    }
+    .popup-close:hover {
+      opacity: 1;
+    }
+
+    /* ---- Legend / hint ---- */
+    .map-legend {
+      margin-top: 12px;
+      font-size: 0.8rem;
+      color: var(--popup-text-color);
+      opacity: 0.6;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ================================================================
+       SETUP INSTRUCTIONS — delete this entire block when you're done
+  ================================================================= -->
+  <div class="instructions">
+    <h2>How to customise this map</h2>
+    <ol>
+      <li><strong>Change the title:</strong> Edit the <code>&lt;h1&gt;</code> and <code>.subtitle</code> text below.</li>
+      <li><strong>Change colours / font:</strong> Edit the CSS variables in the <code>:root { }</code> block at the top of the <code>&lt;style&gt;</code> tag.</li>
+      <li>
+        <strong>Add a marker:</strong> Copy one of the existing <code>&lt;div class="marker"&gt;</code> elements inside <code>.map-area</code> and paste it below the others.
+        Change <code>top</code> and <code>left</code> (percentages from top-left corner of the map) to position it, then update <code>data-title</code> and <code>data-desc</code>.
+      </li>
+      <li><strong>Remove a marker:</strong> Delete its <code>&lt;div class="marker"&gt;</code> line.</li>
+      <li><strong>Delete these instructions:</strong> Remove the entire <code>&lt;div class="instructions"&gt;</code> block before submitting.</li>
+    </ol>
+    <p style="margin-top:10px;">
+      <strong>Tip:</strong> To find the right <code>top / left</code> values, open this file in a browser, right-click the map, choose <em>Inspect</em>, then hover over the map area to see pixel coordinates — divide by the map's total width/height to get percentages.
+    </p>
+  </div>
+  <!-- ================================================================ -->
+
+  <!-- ---- Page heading — edit these ---- -->
+  <h1>Interactive World Map</h1>
+  <p class="subtitle">Click a marker to learn more about each location.</p>
+
+  <div class="map-wrapper">
+    <div class="map-area" id="mapArea">
+
+      <!-- ============================================================
+           CONTINENT SHAPES
+           These divs create rough landmass outlines using CSS.
+           You can leave them as-is or adjust top/left/width/height.
+      ============================================================== -->
+      <div class="continent north-america"></div>
+      <div class="continent central-america"></div>
+      <div class="continent south-america"></div>
+      <div class="continent europe"></div>
+      <div class="continent africa"></div>
+      <div class="continent middle-east"></div>
+      <div class="continent asia"></div>
+      <div class="continent southeast-asia"></div>
+      <div class="continent australia"></div>
+      <div class="continent greenland"></div>
+      <div class="continent antarctica"></div>
+
+      <!-- ============================================================
+           MARKERS
+           Each marker is a div with class "marker".
+           Set its position with inline style top/left percentages.
+           Set the popup title and description with data attributes.
+
+           To add a new marker, copy this pattern:
+
+             <div class="marker"
+                  style="top: XX%; left: XX%;"
+                  data-title="Your Title"
+                  data-desc="Your description text here.">
+             </div>
+
+           The top/left values are percentages measured from the
+           top-left corner of the map area.
+      ============================================================== -->
+
+      <!-- Placeholder marker 1: Sydney, Australia -->
+      <div class="marker"
+           style="top: 68%; left: 78%;"
+           data-title="Sydney, Australia"
+           data-desc="Sydney is the largest city in Australia and home to the famous Opera House and Harbour Bridge. It sits on the south-east coast of the continent.">
+      </div>
+
+      <!-- Placeholder marker 2: Rio de Janeiro, South America -->
+      <div class="marker"
+           style="top: 62%; left: 22%;"
+           data-title="Rio de Janeiro, Brazil"
+           data-desc="Rio de Janeiro is Brazil's second-largest city, famous for its Carnival festival, Christ the Redeemer statue, and Copacabana beach.">
+      </div>
+
+      <!-- Placeholder marker 3: London, Europe -->
+      <div class="marker"
+           style="top: 16%; left: 44%;"
+           data-title="London, United Kingdom"
+           data-desc="London is the capital of the United Kingdom and one of the world's major financial and cultural centres. It sits on the River Thames in south-east England.">
+      </div>
+
+      <!-- Placeholder marker 4: Nairobi, Africa -->
+      <div class="marker"
+           style="top: 48%; left: 51%;"
+           data-title="Nairobi, Kenya"
+           data-desc="Nairobi is the capital and largest city of Kenya. It is a major hub for East Africa and is situated at roughly 1,795 m above sea level on the Kenyan Highlands.">
+      </div>
+
+      <!-- ADD YOUR OWN MARKERS BELOW THIS LINE -->
+
+    </div><!-- end .map-area -->
+
+    <p class="map-legend">Shapes are simplified representations — not to exact scale.</p>
+  </div><!-- end .map-wrapper -->
+
+  <!-- ============================================================
+       POPUP (do not edit — controlled by JavaScript below)
+  ============================================================== -->
+  <div class="popup" id="popup">
+    <button class="popup-close" id="popupClose" title="Close">&#x2715;</button>
+    <div class="popup-title" id="popupTitle"></div>
+    <div class="popup-desc" id="popupDesc"></div>
+  </div>
+
+  <!-- ============================================================
+       JAVASCRIPT
+       Controls opening and closing the popup.
+       Uses vanilla JS only (no ES6, no frameworks).
+  ============================================================== -->
+  <script>
+    var popup      = document.getElementById('popup');
+    var popupTitle = document.getElementById('popupTitle');
+    var popupDesc  = document.getElementById('popupDesc');
+    var closeBtn   = document.getElementById('popupClose');
+    var markers    = document.querySelectorAll('.marker');
+
+    /* ---- Open popup when a marker is clicked ---- */
+    markers.forEach(function(marker) {
+      marker.addEventListener('click', function(event) {
+        event.stopPropagation(); /* prevent the document click from immediately closing it */
+
+        /* Read content from data attributes */
+        popupTitle.textContent = marker.getAttribute('data-title') || 'Location';
+        popupDesc.textContent  = marker.getAttribute('data-desc')  || 'No description provided.';
+
+        /* Position popup near the click, keeping it within the viewport */
+        var x = event.clientX + 14;
+        var y = event.clientY + 14;
+        var popupWidth  = 290;
+        var popupHeight = 160; /* approximate */
+
+        if (x + popupWidth > window.innerWidth) {
+          x = event.clientX - popupWidth - 14;
+        }
+        if (y + popupHeight > window.innerHeight) {
+          y = event.clientY - popupHeight - 14;
+        }
+
+        popup.style.left = x + 'px';
+        popup.style.top  = y + 'px';
+
+        popup.classList.add('active');
+      });
+    });
+
+    /* ---- Close popup when X button is clicked ---- */
+    closeBtn.addEventListener('click', function() {
+      popup.classList.remove('active');
+    });
+
+    /* ---- Close popup when clicking anywhere else on the page ---- */
+    document.addEventListener('click', function() {
+      popup.classList.remove('active');
+    });
+
+    /* ---- Prevent clicks inside the popup from closing it ---- */
+    popup.addEventListener('click', function(event) {
+      event.stopPropagation();
+    });
+  </script>
+
+</body>
+</html>

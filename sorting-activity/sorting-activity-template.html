@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- STUDENT: Change this title to match your topic -->
+  <title>Sorting Activity</title>
+  <style>
+    /* ============================================================
+       CUSTOMIZATION ZONE — edit these variables to restyle the page
+       ============================================================ */
+    :root {
+      --bg-color: #1a1a2e;           /* Page background */
+      --surface-color: #16213e;      /* Card and column background */
+      --border-color: #0f3460;       /* Border color for cards and columns */
+      --accent-a: #e94560;           /* Highlight color for Category A */
+      --accent-b: #0f9b8e;           /* Highlight color for Category B */
+      --text-color: #eaeaea;         /* Main text color */
+      --subtext-color: #a0a0b0;      /* Secondary / muted text color */
+      --btn-radius: 6px;             /* Button corner rounding */
+      --card-radius: 10px;           /* Card corner rounding */
+      --font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; /* Page font */
+      --pool-bg: #0d1117;            /* Background of the unsorted item pool */
+      --instructions-bg: #2a2a00;    /* Background of the instructions banner */
+      --instructions-border: #aaaa00;/* Border of the instructions banner */
+    }
+    /* ============================================================ */
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: var(--font-family);
+      background: var(--bg-color);
+      color: var(--text-color);
+      min-height: 100vh;
+      padding: 24px 16px 48px;
+    }
+
+    /* ---------- Instructions banner (delete this whole div when done) ---------- */
+    .instructions {
+      background: var(--instructions-bg);
+      border: 2px solid var(--instructions-border);
+      border-radius: var(--card-radius);
+      padding: 16px 20px;
+      margin-bottom: 28px;
+      max-width: 900px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    .instructions h2 { color: #ffff66; margin-bottom: 8px; font-size: 1rem; letter-spacing: 0.05em; }
+    .instructions ol { padding-left: 20px; }
+    .instructions li { margin-bottom: 6px; font-size: 0.88rem; color: #dddd88; line-height: 1.5; }
+    .instructions code {
+      background: rgba(255,255,255,0.1);
+      border-radius: 3px;
+      padding: 1px 5px;
+      font-size: 0.85rem;
+      color: #ffdd88;
+    }
+
+    /* ---------- Page header ---------- */
+    header {
+      text-align: center;
+      max-width: 900px;
+      margin: 0 auto 28px;
+    }
+    header h1 {
+      font-size: clamp(1.4rem, 4vw, 2.2rem);
+      margin-bottom: 8px;
+      letter-spacing: 0.03em;
+    }
+    header p.subtitle {
+      color: var(--subtext-color);
+      font-size: 0.95rem;
+    }
+
+    /* ---------- Reset button ---------- */
+    .controls {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    .btn-reset {
+      background: transparent;
+      border: 2px solid var(--subtext-color);
+      color: var(--subtext-color);
+      padding: 8px 22px;
+      border-radius: var(--btn-radius);
+      cursor: pointer;
+      font-size: 0.9rem;
+      font-family: var(--font-family);
+      transition: border-color 0.2s, color 0.2s;
+    }
+    .btn-reset:hover {
+      border-color: var(--text-color);
+      color: var(--text-color);
+    }
+
+    /* ---------- Item pool ---------- */
+    .pool-section {
+      max-width: 900px;
+      margin: 0 auto 32px;
+    }
+    .pool-label {
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--subtext-color);
+      margin-bottom: 10px;
+    }
+    .pool {
+      background: var(--pool-bg);
+      border: 2px dashed var(--border-color);
+      border-radius: var(--card-radius);
+      min-height: 90px;
+      padding: 14px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      align-content: flex-start;
+      transition: border-color 0.2s;
+    }
+    .pool:empty::after {
+      content: 'All items have been sorted!';
+      color: var(--subtext-color);
+      font-size: 0.9rem;
+      align-self: center;
+      width: 100%;
+      text-align: center;
+      padding: 12px 0;
+    }
+
+    /* ---------- Cards ---------- */
+    .card {
+      background: var(--surface-color);
+      border: 1.5px solid var(--border-color);
+      border-radius: var(--card-radius);
+      padding: 12px 14px;
+      width: 180px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      transition: transform 0.15s, box-shadow 0.15s;
+    }
+    .card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(0,0,0,0.4);
+    }
+    .card-text {
+      font-size: 0.95rem;
+      line-height: 1.4;
+      flex: 1;
+    }
+    /* Buttons row on unsorted cards */
+    .card-actions {
+      display: flex;
+      gap: 6px;
+    }
+    .btn-sort {
+      flex: 1;
+      border: none;
+      border-radius: var(--btn-radius);
+      padding: 5px 4px;
+      font-size: 0.72rem;
+      cursor: pointer;
+      font-family: var(--font-family);
+      font-weight: 600;
+      transition: opacity 0.15s, transform 0.1s;
+    }
+    .btn-sort:hover { opacity: 0.85; transform: scale(1.04); }
+    .btn-sort-a {
+      background: var(--accent-a);
+      color: #fff;
+    }
+    .btn-sort-b {
+      background: var(--accent-b);
+      color: #fff;
+    }
+
+    /* Back button on sorted cards */
+    .btn-back {
+      width: 100%;
+      background: transparent;
+      border: 1.5px solid var(--border-color);
+      color: var(--subtext-color);
+      border-radius: var(--btn-radius);
+      padding: 4px 0;
+      font-size: 0.72rem;
+      cursor: pointer;
+      font-family: var(--font-family);
+      transition: border-color 0.15s, color 0.15s;
+    }
+    .btn-back:hover {
+      border-color: var(--text-color);
+      color: var(--text-color);
+    }
+
+    /* ---------- Category columns ---------- */
+    .categories {
+      max-width: 900px;
+      margin: 0 auto;
+      display: flex;
+      gap: 20px;
+      align-items: flex-start;
+    }
+    .column {
+      flex: 1;
+      min-width: 0;
+    }
+    .column-header {
+      border-radius: var(--card-radius) var(--card-radius) 0 0;
+      padding: 14px 16px;
+      text-align: center;
+    }
+    .column-header h2 {
+      font-size: clamp(1rem, 2.5vw, 1.4rem);
+      letter-spacing: 0.02em;
+    }
+    .column-a .column-header { background: var(--accent-a); }
+    .column-b .column-header { background: var(--accent-b); }
+
+    .column-body {
+      background: var(--surface-color);
+      border: 2px solid var(--border-color);
+      border-top: none;
+      border-radius: 0 0 var(--card-radius) var(--card-radius);
+      min-height: 200px;
+      padding: 14px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      align-content: flex-start;
+    }
+    .column-body:empty::after {
+      content: 'Drag items here using the buttons above';
+      color: var(--subtext-color);
+      font-size: 0.85rem;
+      width: 100%;
+      text-align: center;
+      padding: 20px 0;
+    }
+
+    /* Sorted card — left-border accent */
+    .column-a .card { border-left: 4px solid var(--accent-a); }
+    .column-b .card { border-left: 4px solid var(--accent-b); }
+
+    /* ---------- Score counter ---------- */
+    .score-bar {
+      max-width: 900px;
+      margin: 24px auto 0;
+      display: flex;
+      justify-content: center;
+      gap: 32px;
+      font-size: 0.85rem;
+      color: var(--subtext-color);
+    }
+    .score-bar span { display: flex; align-items: center; gap: 6px; }
+    .score-dot {
+      display: inline-block;
+      width: 10px; height: 10px;
+      border-radius: 50%;
+    }
+    .dot-a { background: var(--accent-a); }
+    .dot-b { background: var(--accent-b); }
+
+    /* ---------- Responsive ---------- */
+    @media (max-width: 600px) {
+      .categories { flex-direction: column; }
+      .card { width: 140px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ============================================================
+       INSTRUCTIONS BANNER — delete this entire <div class="instructions"> block when done
+       ============================================================ -->
+  <div class="instructions">
+    <h2>SETUP GUIDE — delete this box when finished</h2>
+    <ol>
+      <li>Change the <code>&lt;title&gt;</code> tag and the <code>&lt;h1&gt;</code> heading to your topic.</li>
+      <li>Edit the two <code>data-name</code> attributes on the <code>.column</code> divs to set your category names (e.g. <code>data-name="Advantages"</code>). The column headers update automatically.</li>
+      <li>Find the <code>&lt;!-- ITEM POOL --&gt;</code> section below and edit the 8 <code>data-label</code> values on each <code>&lt;div class="card" ...&gt;</code> to your own items.</li>
+      <li>Add or remove <code>&lt;div class="card" ...&gt;</code> blocks to change the number of items.</li>
+      <li>Adjust colours in the <code>:root</code> block at the top of the <code>&lt;style&gt;</code> section.</li>
+      <li>Delete this yellow instructions box before sharing with students.</li>
+    </ol>
+  </div>
+  <!-- END INSTRUCTIONS BANNER -->
+
+  <!-- ============================================================
+       PAGE HEADER — edit the heading and subtitle
+       ============================================================ -->
+  <header>
+    <!-- STUDENT: Edit this heading -->
+    <h1>Sorting Activity</h1>
+    <!-- STUDENT: Edit or delete this subtitle -->
+    <p class="subtitle">Sort each item into the correct category using the buttons on the cards.</p>
+  </header>
+
+  <div class="controls">
+    <button class="btn-reset" id="resetBtn">Reset All</button>
+  </div>
+
+  <!-- ============================================================
+       ITEM POOL — edit data-label on each card to rename items
+       Add more cards by copying a <div class="card" ...> block.
+       Remove cards by deleting a block.
+       ============================================================ -->
+  <section class="pool-section">
+    <p class="pool-label">Items to sort</p>
+    <div class="pool" id="pool">
+
+      <!-- STUDENT: Replace "Item 1" with your first item text, and so on for each card below -->
+
+      <div class="card" data-label="Item 1">
+        <span class="card-text">Item 1</span>
+        <!-- Sort buttons are added by JavaScript — do not add them manually -->
+      </div>
+
+      <div class="card" data-label="Item 2">
+        <span class="card-text">Item 2</span>
+      </div>
+
+      <div class="card" data-label="Item 3">
+        <span class="card-text">Item 3</span>
+      </div>
+
+      <div class="card" data-label="Item 4">
+        <span class="card-text">Item 4</span>
+      </div>
+
+      <div class="card" data-label="Item 5">
+        <span class="card-text">Item 5</span>
+      </div>
+
+      <div class="card" data-label="Item 6">
+        <span class="card-text">Item 6</span>
+      </div>
+
+      <div class="card" data-label="Item 7">
+        <span class="card-text">Item 7</span>
+      </div>
+
+      <div class="card" data-label="Item 8">
+        <span class="card-text">Item 8</span>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ============================================================
+       CATEGORY COLUMNS
+       Edit data-name="..." on each .column div to set the category name.
+       The heading text inside <h2> should match — the JS reads data-name
+       to label the sort buttons, but the visible heading is the <h2>.
+       ============================================================ -->
+  <section class="categories">
+
+    <!-- STUDENT: Change data-name and the <h2> text to your Category A name -->
+    <div class="column column-a" id="colA" data-name="Category A">
+      <div class="column-header">
+        <h2>Category A</h2>
+      </div>
+      <div class="column-body" id="bodyA"></div>
+    </div>
+
+    <!-- STUDENT: Change data-name and the <h2> text to your Category B name -->
+    <div class="column column-b" id="colB" data-name="Category B">
+      <div class="column-header">
+        <h2>Category B</h2>
+      </div>
+      <div class="column-body" id="bodyB"></div>
+    </div>
+
+  </section>
+
+  <!-- Item count display -->
+  <div class="score-bar">
+    <span><span class="score-dot dot-a"></span> <span id="countA">0</span> in Category A</span>
+    <span><span class="score-dot dot-b"></span> <span id="countB">0</span> in Category B</span>
+  </div>
+
+  <script>
+    /* ============================================================
+       SORTING ACTIVITY — vanilla JS, no ES6 modules
+       Do not edit this script unless you know what you are doing.
+       ============================================================ */
+
+    // Read category names from the column data attributes
+    var nameA = document.getElementById('colA').getAttribute('data-name');
+    var nameB = document.getElementById('colB').getAttribute('data-name');
+
+    var pool  = document.getElementById('pool');
+    var bodyA = document.getElementById('bodyA');
+    var bodyB = document.getElementById('bodyB');
+    var countAEl = document.getElementById('countA');
+    var countBEl = document.getElementById('countB');
+
+    // Build sort buttons on every card in the pool
+    function buildPoolButtons(card) {
+      // Remove any existing action div first
+      var old = card.querySelector('.card-actions');
+      if (old) { old.parentNode.removeChild(old); }
+
+      var actions = document.createElement('div');
+      actions.className = 'card-actions';
+
+      var btnA = document.createElement('button');
+      btnA.className = 'btn-sort btn-sort-a';
+      btnA.textContent = '\u2192 ' + nameA;
+      btnA.addEventListener('click', function() { moveToColumn(card, 'A'); });
+
+      var btnB = document.createElement('button');
+      btnB.className = 'btn-sort btn-sort-b';
+      btnB.textContent = '\u2192 ' + nameB;
+      btnB.addEventListener('click', function() { moveToColumn(card, 'B'); });
+
+      actions.appendChild(btnA);
+      actions.appendChild(btnB);
+      card.appendChild(actions);
+    }
+
+    // Build the "Back" button shown on sorted cards
+    function buildBackButton(card) {
+      var old = card.querySelector('.card-actions');
+      if (old) { old.parentNode.removeChild(old); }
+
+      var actions = document.createElement('div');
+      actions.className = 'card-actions';
+
+      var btn = document.createElement('button');
+      btn.className = 'btn-back';
+      btn.textContent = '\u2190 Back to pool';
+      btn.addEventListener('click', function() { returnToPool(card); });
+
+      actions.appendChild(btn);
+      card.appendChild(actions);
+    }
+
+    // Move a card from the pool into a category column
+    function moveToColumn(card, col) {
+      if (col === 'A') {
+        bodyA.appendChild(card);
+      } else {
+        bodyB.appendChild(card);
+      }
+      buildBackButton(card);
+      updateCounts();
+    }
+
+    // Return a sorted card back to the pool
+    function returnToPool(card) {
+      pool.appendChild(card);
+      buildPoolButtons(card);
+      updateCounts();
+    }
+
+    // Update the item count display
+    function updateCounts() {
+      countAEl.textContent = bodyA.querySelectorAll('.card').length;
+      countBEl.textContent = bodyB.querySelectorAll('.card').length;
+    }
+
+    // Reset all cards back to the pool
+    function resetAll() {
+      // Collect cards from both columns and return them
+      var sortedCards = document.querySelectorAll('#bodyA .card, #bodyB .card');
+      sortedCards.forEach(function(card) {
+        pool.appendChild(card);
+        buildPoolButtons(card);
+      });
+      updateCounts();
+    }
+
+    // Initialise — attach sort buttons to all cards already in the pool
+    function init() {
+      var cards = pool.querySelectorAll('.card');
+      cards.forEach(function(card) {
+        buildPoolButtons(card);
+      });
+      updateCounts();
+    }
+
+    document.getElementById('resetBtn').addEventListener('click', resetAll);
+
+    init();
+  </script>
+
+</body>
+</html>

@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>True or False Checker</title>
+  <style>
+
+    /* ============================================
+       CUSTOMISATION ZONE
+       Change these values to restyle your quiz.
+       ============================================ */
+    :root {
+      --bg-color: #1a1a2e;          /* Page background */
+      --card-bg: #16213e;           /* Statement card background */
+      --card-border: #0f3460;       /* Card border (default) */
+      --text-color: #e0e0e0;        /* Main text colour */
+      --heading-color: #e94560;     /* Title and accent colour */
+      --true-color: #4caf50;        /* Correct answer — green */
+      --false-color: #e94560;       /* Wrong answer — red */
+      --btn-true-bg: #2d6a4f;       /* "True" button colour */
+      --btn-false-bg: #6b2737;      /* "False" button colour */
+      --font-family: 'Segoe UI', sans-serif; /* Text font */
+      --card-radius: 10px;          /* Corner rounding on cards */
+    }
+    /* ============================================
+       END CUSTOMISATION ZONE
+       ============================================ */
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      font-family: var(--font-family);
+      min-height: 100vh;
+      padding: 2rem 1rem;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+
+    header h1 {
+      color: var(--heading-color);
+      font-size: 2rem;
+      margin-bottom: 0.4rem;
+    }
+
+    header p.subtitle {
+      opacity: 0.65;
+      font-size: 1rem;
+    }
+
+    .quiz-container {
+      max-width: 680px;
+      margin: 0 auto;
+    }
+
+    /* --- Statement card --- */
+    .statement-card {
+      background: var(--card-bg);
+      border: 2px solid var(--card-border);
+      border-radius: var(--card-radius);
+      padding: 1.25rem 1.5rem;
+      margin-bottom: 1rem;
+      transition: border-color 0.3s;
+    }
+
+    .statement-card.correct  { border-color: var(--true-color); }
+    .statement-card.incorrect { border-color: var(--false-color); }
+
+    .statement-number {
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      opacity: 0.45;
+      margin-bottom: 0.5rem;
+    }
+
+    .statement-text {
+      font-size: 1.1rem;
+      line-height: 1.55;
+      margin-bottom: 1rem;
+    }
+
+    /* --- Buttons --- */
+    .btn-group {
+      display: flex;
+      gap: 0.75rem;
+    }
+
+    .btn-true,
+    .btn-false {
+      padding: 0.5rem 1.4rem;
+      border: none;
+      border-radius: 6px;
+      font-size: 0.95rem;
+      font-weight: bold;
+      color: #fff;
+      cursor: pointer;
+      transition: opacity 0.2s, transform 0.1s;
+    }
+
+    .btn-true  { background: var(--btn-true-bg); }
+    .btn-false { background: var(--btn-false-bg); }
+
+    .btn-true:hover,
+    .btn-false:hover {
+      opacity: 0.82;
+      transform: translateY(-1px);
+    }
+
+    .btn-true:disabled,
+    .btn-false:disabled {
+      cursor: default;
+      opacity: 0.45;
+      transform: none;
+    }
+
+    /* --- Feedback line --- */
+    .feedback {
+      margin-top: 0.75rem;
+      font-weight: bold;
+      font-size: 0.95rem;
+      min-height: 1.2em;
+    }
+
+    .feedback.correct-msg  { color: var(--true-color); }
+    .feedback.incorrect-msg { color: var(--false-color); }
+
+    /* --- Optional explanation shown after answering --- */
+    .explanation {
+      display: none;
+      margin-top: 0.4rem;
+      font-size: 0.85rem;
+      opacity: 0.75;
+      line-height: 1.5;
+    }
+
+    /* --- Score area --- */
+    .score-area {
+      max-width: 680px;
+      margin: 1.5rem auto 0;
+      text-align: center;
+      background: var(--card-bg);
+      border: 2px solid var(--card-border);
+      border-radius: var(--card-radius);
+      padding: 1.5rem;
+    }
+
+    .score-display {
+      font-size: 2.2rem;
+      font-weight: bold;
+      color: var(--heading-color);
+    }
+
+    .score-label {
+      opacity: 0.6;
+      margin-top: 0.25rem;
+      font-size: 0.9rem;
+    }
+
+    .reset-btn {
+      margin-top: 1rem;
+      padding: 0.5rem 1.5rem;
+      background: transparent;
+      border: 2px solid var(--heading-color);
+      color: var(--heading-color);
+      border-radius: 6px;
+      font-size: 0.9rem;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background 0.2s, color 0.2s;
+    }
+
+    .reset-btn:hover {
+      background: var(--heading-color);
+      color: #fff;
+    }
+
+    /* --- Setup instructions banner (students delete this) --- */
+    .instructions {
+      background: #2a1a00;
+      border: 2px dashed #f0a500;
+      border-radius: var(--card-radius);
+      padding: 1.25rem 1.5rem;
+      margin-bottom: 2rem;
+      font-size: 0.88rem;
+      line-height: 1.65;
+      color: #f0d080;
+      max-width: 680px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .instructions h2 {
+      color: #f0a500;
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      margin-bottom: 0.6rem;
+    }
+
+    .instructions ol {
+      padding-left: 1.2rem;
+    }
+
+    .instructions li {
+      margin-bottom: 0.35rem;
+    }
+
+    .instructions code {
+      background: #0009;
+      padding: 0.1em 0.35em;
+      border-radius: 3px;
+      font-size: 0.82em;
+    }
+
+  </style>
+</head>
+<body>
+
+  <!-- SETUP GUIDE — delete this whole block when you are finished editing -->
+  <div class="instructions">
+    <h2>Setup Guide (delete this section when done)</h2>
+    <ol>
+      <li>Change the <code>&lt;h1&gt;</code> title and subtitle below to match your topic.</li>
+      <li>Each statement is a <code>&lt;div class="statement-card"&gt;</code> block.</li>
+      <li>Set <code>data-answer="true"</code> or <code>data-answer="false"</code> on each card to mark the correct answer.</li>
+      <li>Edit the <code>&lt;p class="statement-text"&gt;</code> to write your statement.</li>
+      <li>Edit the <code>&lt;p class="explanation"&gt;</code> to add an optional note shown after answering (or delete it).</li>
+      <li>Copy the example block at the bottom of the list to add more statements.</li>
+      <li>Customise colours by editing the CSS variables in the <code>:root</code> block at the top of <code>&lt;style&gt;</code>.</li>
+    </ol>
+  </div>
+  <!-- END SETUP GUIDE -->
+
+  <header>
+    <!-- CHANGE THIS: update the title and subtitle to match your topic -->
+    <h1>True or False?</h1>
+    <p class="subtitle">General Knowledge &mdash; click True or False for each statement</p>
+  </header>
+
+  <div class="quiz-container" id="quiz-container">
+
+    <!--
+      =====================================================
+      STATEMENT CARDS
+      Each card needs:
+        data-answer="true"  — if the statement is TRUE
+        data-answer="false" — if the statement is FALSE
+      =====================================================
+    -->
+
+    <!-- Statement 1 — FALSE (common myth) -->
+    <div class="statement-card" data-answer="false">
+      <p class="statement-number">Statement 1</p>
+      <p class="statement-text">The Great Wall of China is visible from space with the naked eye.</p>
+      <div class="btn-group">
+        <button class="btn-true">True</button>
+        <button class="btn-false">False</button>
+      </div>
+      <p class="feedback"></p>
+      <p class="explanation">This is a common myth — the wall is far too narrow to see from space without optical aid.</p>
+    </div>
+
+    <!-- Statement 2 — TRUE -->
+    <div class="statement-card" data-answer="true">
+      <p class="statement-number">Statement 2</p>
+      <p class="statement-text">Water boils at 100&deg;C at sea level.</p>
+      <div class="btn-group">
+        <button class="btn-true">True</button>
+        <button class="btn-false">False</button>
+      </div>
+      <p class="feedback"></p>
+      <p class="explanation">True &mdash; at standard atmospheric pressure, water boils at exactly 100&deg;C (212&deg;F). At higher altitudes, it boils at a lower temperature.</p>
+    </div>
+
+    <!-- Statement 3 — TRUE -->
+    <div class="statement-card" data-answer="true">
+      <p class="statement-number">Statement 3</p>
+      <p class="statement-text">Sharks are fish, not mammals.</p>
+      <div class="btn-group">
+        <button class="btn-true">True</button>
+        <button class="btn-false">False</button>
+      </div>
+      <p class="feedback"></p>
+      <p class="explanation">True &mdash; sharks are cartilaginous fish. Dolphins and whales look similar but are mammals; sharks are not.</p>
+    </div>
+
+    <!-- Statement 4 — FALSE (myth) -->
+    <div class="statement-card" data-answer="false">
+      <p class="statement-number">Statement 4</p>
+      <p class="statement-text">Humans only use 10% of their brain.</p>
+      <div class="btn-group">
+        <button class="btn-true">True</button>
+        <button class="btn-false">False</button>
+      </div>
+      <p class="feedback"></p>
+      <p class="explanation">False &mdash; brain scans show we use virtually all of our brain, and most areas are active at some point during the day.</p>
+    </div>
+
+    <!-- Statement 5 — TRUE -->
+    <div class="statement-card" data-answer="true">
+      <p class="statement-number">Statement 5</p>
+      <p class="statement-text">Lightning can strike the same place twice.</p>
+      <div class="btn-group">
+        <button class="btn-true">True</button>
+        <button class="btn-false">False</button>
+      </div>
+      <p class="feedback"></p>
+      <p class="explanation">True &mdash; tall structures like lightning rods and skyscrapers are struck repeatedly during the same storm.</p>
+    </div>
+
+    <!--
+      =====================================================
+      ADD MORE STATEMENTS HERE
+      Copy and paste the block below, then edit it.
+
+      <div class="statement-card" data-answer="true">
+        <p class="statement-number">Statement 6</p>
+        <p class="statement-text">Your statement goes here.</p>
+        <div class="btn-group">
+          <button class="btn-true">True</button>
+          <button class="btn-false">False</button>
+        </div>
+        <p class="feedback"></p>
+        <p class="explanation">Optional extra explanation shown after the student answers.</p>
+      </div>
+
+      =====================================================
+    -->
+
+  </div>
+
+  <!-- Score tracker — always visible -->
+  <div class="score-area" id="score-area">
+    <p class="score-display" id="score-display">0 / 0</p>
+    <p class="score-label" id="score-label">Answer the statements above</p>
+    <button class="reset-btn" id="reset-btn">Try Again</button>
+  </div>
+
+  <script>
+    // ---- TRUE OR FALSE CHECKER ----
+    // You do not need to edit this script.
+    // It reads data-answer from each card and handles all button logic.
+
+    var score = 0;
+    var answered = 0;
+    var cards = document.querySelectorAll('.statement-card');
+    var totalQuestions = cards.length;
+
+    // Update the score display at the bottom
+    function updateScore() {
+      var display = document.getElementById('score-display');
+      var label = document.getElementById('score-label');
+      display.textContent = score + ' / ' + totalQuestions;
+
+      if (answered === totalQuestions) {
+        // All statements answered — show a completion message
+        if (score === totalQuestions) {
+          label.textContent = 'Perfect score! Well done.';
+        } else if (score >= totalQuestions / 2) {
+          label.textContent = 'Good work! Review any you missed.';
+        } else {
+          label.textContent = 'Keep practising — review the explanations above.';
+        }
+      } else {
+        label.textContent = answered + ' of ' + totalQuestions + ' answered';
+      }
+    }
+
+    // Auto-number statements and wire up buttons for each card
+    cards.forEach(function(card, index) {
+      var correctAnswer = card.getAttribute('data-answer'); // "true" or "false"
+      var trueBtn = card.querySelector('.btn-true');
+      var falseBtn = card.querySelector('.btn-false');
+      var feedbackEl = card.querySelector('.feedback');
+      var explanationEl = card.querySelector('.explanation');
+
+      // Number the statement automatically based on its position
+      card.querySelector('.statement-number').textContent = 'Statement ' + (index + 1);
+
+      // True button clicked
+      trueBtn.addEventListener('click', function() {
+        checkAnswer('true', correctAnswer, card, feedbackEl, explanationEl, trueBtn, falseBtn);
+      });
+
+      // False button clicked
+      falseBtn.addEventListener('click', function() {
+        checkAnswer('false', correctAnswer, card, feedbackEl, explanationEl, trueBtn, falseBtn);
+      });
+    });
+
+    // Handle an answer: compare chosen vs correct, show feedback, update score
+    function checkAnswer(chosen, correct, card, feedbackEl, explanationEl, trueBtn, falseBtn) {
+      // Lock the card so it can only be answered once
+      trueBtn.disabled = true;
+      falseBtn.disabled = true;
+      answered++;
+
+      if (chosen === correct) {
+        score++;
+        card.classList.add('correct');
+        feedbackEl.textContent = 'Correct!';
+        feedbackEl.className = 'feedback correct-msg';
+      } else {
+        card.classList.add('incorrect');
+        var correctWord = correct.charAt(0).toUpperCase() + correct.slice(1);
+        feedbackEl.textContent = 'Incorrect \u2014 the answer is ' + correctWord + '.';
+        feedbackEl.className = 'feedback incorrect-msg';
+      }
+
+      // Show the optional explanation if one exists
+      if (explanationEl) {
+        explanationEl.style.display = 'block';
+      }
+
+      updateScore();
+    }
+
+    // Reset button reloads the page to start over
+    document.getElementById('reset-btn').addEventListener('click', function() {
+      window.location.reload();
+    });
+
+    // Initialise score display on page load
+    updateScore();
+  </script>
+
+</body>
+</html>

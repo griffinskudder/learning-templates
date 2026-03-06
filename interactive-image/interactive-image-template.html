@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Interactive Image</title>
+  <style>
+    /* ============================================================
+       CUSTOMIZATION ZONE — Edit these variables freely!
+       ============================================================ */
+    :root {
+      --accent:       #c0392b;       /* Button / highlight colour   */
+      --accent-light: #e74c3c;       /* Hover state                 */
+      --popup-bg:     #1a1a2e;       /* Popup background            */
+      --popup-text:   #eaeaea;       /* Popup body text             */
+      --btn-text:     #ffffff;       /* Label on buttons            */
+      --overlay-bg:   rgba(0,0,0,.55); /* Dark overlay over image   */
+      --page-bg:      #0d0d0d;         /* Page background colour    */
+      --font-title:   Georgia, serif;
+      --font-body:    'Courier New', monospace;
+    }
+
+    /* ============================================================
+       PAGE SHELL — generally leave alone
+       ============================================================ */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: var(--font-body);
+      background: var(--page-bg);
+      color: var(--popup-text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    header {
+      width: 100%;
+      padding: 1.2rem 2rem;
+      text-align: center;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      font-family: var(--font-title);
+      font-size: 1.5rem;
+      border-bottom: 2px solid var(--accent);
+      background: var(--page-bg);
+    }
+
+    /* ============================================================
+       IMAGE CONTAINER
+       ============================================================ */
+    .image-wrap {
+      position: relative;
+      width: 900px;
+      max-width: 98vw;
+      margin: 2rem auto;
+      /* The container height is driven by the image inside */
+    }
+
+    /* ---- BACKGROUND IMAGE ----
+       Replace the src below with your own image path.
+       The image must be in the same folder as this HTML file,
+       e.g.  src="my-image.jpg"
+       Supported formats: jpg, png, gif, svg, webp
+    */
+    .bg-image {
+      display: block;
+      width: 100%;
+      height: auto;
+      border: 3px solid var(--accent);
+      border-radius: 4px;
+      /* If you don't have an image yet, a placeholder is shown instead */
+    }
+
+    /* Thin grid overlay — cosmetic, delete if unwanted */
+    .image-wrap::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(255,255,255,.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,.04) 1px, transparent 1px);
+      background-size: 40px 40px;
+      pointer-events: none;
+      border-radius: 4px;
+    }
+
+    /* ============================================================
+       BUTTONS
+       ============================================================
+
+       Each button is positioned with  top / left  as a percentage
+       of the image's height / width.  This keeps everything in place
+       even when the page is resized.
+
+       HOW TO ADD A BUTTON
+       ───────────────────
+       1. Copy one of the <button> blocks below inside <div class="image-wrap">
+       2. Change  data-popup="popupXX"  to match a new popup id
+       3. Adjust  style="top: __%; left: __%;"  to place it on the image
+       4. Change the button label text
+       5. Create a matching <div class="popup" id="popupXX"> block
+
+       HOW TO POSITION BUTTONS
+       ───────────────────────
+       Hover your cursor over the image, look at the browser's element
+       inspector (F12 → Inspector), or just trial-and-error the
+       top/left percentages until the button lands where you want it.
+    */
+
+    .pin-btn {
+      position: absolute;
+      transform: translate(-50%, -50%);   /* centre the pin on the coordinate */
+      cursor: pointer;
+      border: none;
+      background: var(--accent);
+      color: var(--btn-text);
+      font-family: var(--font-body);
+      font-size: .75rem;
+      font-weight: bold;
+      letter-spacing: .06em;
+      text-transform: uppercase;
+      padding: .45rem .9rem;
+      border-radius: 3px;
+      box-shadow: 0 2px 8px rgba(0,0,0,.6);
+      transition: background .2s, transform .15s;
+      white-space: nowrap;
+      /* A small downward triangle acting as a "pin tail" */
+    }
+    .pin-btn::after {
+      content: '';
+      position: absolute;
+      bottom: -7px;
+      left: 50%;
+      transform: translateX(-50%);
+      border: 7px solid transparent;
+      border-top-color: var(--accent);
+      border-bottom: none;
+    }
+    .pin-btn:hover {
+      background: var(--accent-light);
+      transform: translate(-50%, -50%) scale(1.07);
+    }
+    .pin-btn:hover::after {
+      border-top-color: var(--accent-light);
+    }
+
+    /* ============================================================
+       POPUPS
+       ============================================================
+
+       Popups are hidden by default and appear when a matching
+       button is clicked.  They float above the image.
+
+       HOW TO EDIT A POPUP
+       ───────────────────
+       • Change the <h2> for the label title
+       • Replace the <p> with your own descriptive text
+       • Add images with  <img src="photo.jpg" alt="...">
+       • Add bullet lists, links, or any HTML you like inside .popup-body
+
+       POPUP POSITION
+       ──────────────
+       Each popup uses  top / left  percentages just like buttons.
+       Adjust so the popup doesn't overlap the image edge.
+    */
+
+    .popup {
+      display: none;          /* hidden until activated */
+      position: absolute;
+      z-index: 10;
+      width: 260px;
+      background: var(--popup-bg);
+      border: 2px solid var(--accent);
+      border-radius: 6px;
+      box-shadow: 0 8px 30px rgba(0,0,0,.7);
+      overflow: hidden;
+      animation: popIn .2s ease;
+    }
+    .popup.active { display: block; }
+
+    @keyframes popIn {
+      from { opacity: 0; transform: scale(.92); }
+      to   { opacity: 1; transform: scale(1);   }
+    }
+
+    .popup-header {
+      background: var(--accent);
+      padding: .6rem 1rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .popup-header h2 {
+      font-family: var(--font-title);
+      font-size: 1rem;
+      letter-spacing: .05em;
+    }
+    .close-btn {
+      background: none;
+      border: none;
+      color: #fff;
+      font-size: 1.2rem;
+      line-height: 1;
+      cursor: pointer;
+      padding: 0 .2rem;
+    }
+    .popup-body {
+      padding: .8rem 1rem 1rem;
+      font-size: .85rem;
+      line-height: 1.6;
+    }
+    .popup-body img {
+      width: 100%;
+      border-radius: 3px;
+      margin-bottom: .6rem;
+    }
+
+    /* ============================================================
+       INSTRUCTION BANNER  (students: delete this when done)
+       ============================================================ */
+    .instructions {
+      width: 900px;
+      max-width: 98vw;
+      margin: 0 auto 2rem;
+      padding: 1rem 1.4rem;
+      background: #1e1e30;
+      border-left: 4px solid var(--accent);
+      border-radius: 0 4px 4px 0;
+      font-size: .82rem;
+      line-height: 1.7;
+    }
+    .instructions h2 {
+      font-size: .9rem;
+      text-transform: uppercase;
+      letter-spacing: .06em;
+      color: var(--accent-light);
+      margin-bottom: .5rem;
+    }
+    .instructions ol {
+      padding-left: 1.4rem;
+    }
+    .instructions li {
+      margin-bottom: .25rem;
+    }
+    .instructions strong { color: var(--accent-light); }
+    .instructions code {
+      background: #2a2a40;
+      padding: .1em .35em;
+      border-radius: 3px;
+      font-size: .9em;
+    }
+
+    footer {
+      margin-top: auto;
+      padding: 1rem;
+      font-size: .75rem;
+      opacity: .4;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+
+<!-- ============================================================
+     TITLE  — change this text
+     ============================================================ -->
+<header>My Interactive Image</header>
+
+
+<!-- ============================================================
+     INSTRUCTIONS BANNER
+     Delete the entire <div class="instructions"> block when done.
+     ============================================================ -->
+<div class="instructions">
+  <h2>How to set up your Interactive Image</h2>
+  <ol>
+    <li><strong>Background image:</strong> Place your image file in the same folder as this HTML file, then change <code>src="placeholder.svg"</code> on the <code>&lt;img class="bg-image"&gt;</code> tag to your filename, e.g. <code>src="my-image.jpg"</code>.</li>
+    <li><strong>Add a button:</strong> Inside <code>&lt;div class="image-wrap"&gt;</code>, copy any <code>&lt;button class="pin-btn"&gt;</code> block, give it a unique <code>data-popup</code> value, and position it with <code>top</code> / <code>left</code> percentages.</li>
+    <li><strong>Add a popup:</strong> Copy any <code>&lt;div class="popup"&gt;</code> block, match its <code>id</code> to the button's <code>data-popup</code>, and fill in your title &amp; text.</li>
+    <li><strong>Change colours &amp; fonts:</strong> Edit the CSS variables in the <code>:root { }</code> block at the top of the <code>&lt;style&gt;</code> section.</li>
+    <li><strong>Delete this instructions box</strong> when you are done.</li>
+  </ol>
+</div>
+
+
+<!-- ============================================================
+     IMAGE AREA
+     ============================================================ -->
+<div class="image-wrap">
+
+  <!-- BACKGROUND IMAGE — replace src with your file -->
+  <img class="bg-image"
+       src="placeholder.svg"
+       alt="Background image"
+       onerror="this.src=this.getAttribute('data-fallback')"
+       data-fallback="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='900' height='500'%3E%3Crect width='900' height='500' fill='%23162032'/%3E%3Ctext x='50%25' y='48%25' font-family='Georgia' font-size='22' fill='%23c0392b' text-anchor='middle' dominant-baseline='middle'%3EReplace src with your image%3C/text%3E%3Ctext x='50%25' y='57%25' font-family='Courier New' font-size='13' fill='%23667799' text-anchor='middle' dominant-baseline='middle'%3Ee.g. src=%22my-map.jpg%22%3C/text%3E%3C/svg%3E">
+
+  <!-- ============================================================
+       BUTTONS — position each with top / left percentages
+       ============================================================ -->
+
+  <!-- Button 1 -->
+  <button class="pin-btn"
+          data-popup="popup1"
+          style="top: 35%; left: 28%;"> <!--Adjust these top and left positions to position the buttons on the image-->
+    Location A
+  </button>
+
+  <!-- Button 2 -->
+  <button class="pin-btn"
+          data-popup="popup2"
+          style="top: 60%; left: 55%;">
+    Location B
+  </button>
+
+  <!-- Button 3 -->
+  <button class="pin-btn"
+          data-popup="popup3"
+          style="top: 25%; left: 70%;">
+    Location C
+  </button>
+
+  <!-- ── ADD MORE BUTTONS HERE ──────────────────────────────── -->
+  <!--
+  <button class="pin-btn"
+          data-popup="popup4"
+          style="top: 50%; left: 40%;">
+    New Location
+  </button>
+  -->
+
+
+  <!-- ============================================================
+       POPUPS — position each with top / left percentages
+       ============================================================ -->
+
+  <!-- Popup 1 -->
+  <div class="popup" id="popup1" style="top: 10%; left: 5%;">
+    <div class="popup-header">
+      <h2>Location A</h2>
+      <button class="close-btn" aria-label="Close">✕</button>
+    </div>
+    <div class="popup-body">
+      <!-- Add an image: <img src="locationA.jpg" alt="Location A"> -->
+      <p>Write your description of <strong>Location A</strong> here.
+         You can add facts, dates, significance, or any other details
+         you'd like visitors to learn.</p>
+    </div>
+  </div>
+
+  <!-- Popup 2 -->
+  <div class="popup" id="popup2" style="top: 30%; left: 30%;">
+    <div class="popup-header">
+      <h2>Location B</h2>
+      <button class="close-btn" aria-label="Close">✕</button>
+    </div>
+    <div class="popup-body">
+      <!-- Add an image: <img src="locationB.jpg" alt="Location B"> -->
+      <p>Write your description of <strong>Location B</strong> here.</p>
+      <p>This popup has a second paragraph. Add as many as you need!</p>
+    </div>
+  </div>
+
+  <!-- Popup 3 -->
+  <div class="popup" id="popup3" style="top: 5%; left: 42%;">
+    <div class="popup-header">
+      <h2>Location C</h2>
+      <button class="close-btn" aria-label="Close">✕</button>
+    </div>
+    <div class="popup-body">
+      <!-- Add an image: <img src="locationC.jpg" alt="Location C"> -->
+      <p>Write your description of <strong>Location C</strong> here.</p>
+      <ul style="margin-top:.5rem; padding-left:1.2rem;">
+        <li>You can also use bullet points</li>
+        <li>To organise your information</li>
+        <li>Like this!</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- ── ADD MORE POPUPS HERE ───────────────────────────────── -->
+  <!--
+  <div class="popup" id="popup4" style="top: 30%; left: 20%;">
+    <div class="popup-header">
+      <h2>New Location</h2>
+      <button class="close-btn" aria-label="Close">✕</button>
+    </div>
+    <div class="popup-body">
+      <p>Description goes here.</p>
+    </div>
+  </div>
+  -->
+
+</div><!-- end .image-wrap -->
+
+<footer>Interactive Image Template &mdash; no internet required</footer>
+
+<!-- ============================================================
+     JAVASCRIPT  (minimal — do not edit unless confident)
+     ============================================================
+
+     Logic:
+       • Clicking a .pin-btn adds "active" to its matching popup
+       • Clicking a .close-btn or clicking outside a popup removes "active"
+       • Only one popup is open at a time
+-->
+<script>
+  var buttons = document.querySelectorAll('.pin-btn');
+  var popups  = document.querySelectorAll('.popup');
+
+  function closeAll() {
+    popups.forEach(function(p) { p.classList.remove('active'); });
+  }
+
+  buttons.forEach(function(btn) {
+    btn.addEventListener('click', function(e) {
+      e.stopPropagation();
+      var target = document.getElementById(btn.dataset.popup);
+      var isOpen = target.classList.contains('active');
+      closeAll();
+      if (!isOpen) target.classList.add('active');
+    });
+  });
+
+  document.querySelectorAll('.close-btn').forEach(function(cb) {
+    cb.addEventListener('click', function(e) {
+      e.stopPropagation();
+      closeAll();
+    });
+  });
+
+  document.addEventListener('click', closeAll);
+</script>
+
+</body>
+</html>

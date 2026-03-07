@@ -8,13 +8,36 @@ This is a collection of standalone HTML learning templates designed for students
 
 ## Repository Structure
 
-- Each template lives in its own folder (e.g., `interactive-image-map/`)
-- Templates are single-file HTML with inline CSS and JS — no external dependencies
-- No build system, package manager, or test framework
+- Each template lives in its own folder: `<template-name>/`
+- Each folder contains `<template-name>-template.html` (the blank template) and an `examples/` subfolder with worked examples
+- No build system, package manager, or test framework — open HTML files directly in a browser
 
 ## Current Templates
 
-- **interactive-image-map**: A clickable image map where students place pin buttons over a background image. Buttons open positioned popups with descriptive content. Students customise by editing CSS variables (`:root`), adding `<button class="pin-btn">` elements with `top`/`left` percentage positioning, and creating matching `<div class="popup">` blocks.
+- **bug-hunt-easter-egg**: Students find and fix deliberate code errors hidden in HTML/CSS/JS
+- **caption-the-storyboard**: Students write captions for a sequence of storyboard images
+- **fill-in-the-blank**: Cloze-style activity with blanks students type answers into
+- **interactive-image**: Clickable image with labelled hotspot pins that open popups
+- **interactive-map**: Clickable geographic map with location pins and popup descriptions
+- **match-the-pairs**: Drag-and-drop or click-to-match vocabulary/concept pairs
+- **multiple-choice-quiz**: Self-marking quiz with multiple-choice questions
+- **order-the-timeline**: Drag-and-drop chronological ordering activity
+- **sorting-activity**: Drag-and-drop sorting into categories (e.g. causes vs effects)
+- **true-or-false-checker**: Self-marking true/false statement activity
+- **vocabulary-builder**: Definition-matching vocabulary learning activity
+
+## Adding a New Template
+
+1. Create a folder: `<template-name>/`
+2. Create the blank template: `<template-name>/<template-name>-template.html`
+3. Add a worked example: `<template-name>/examples/<topic-name>.html`
+4. Follow all Template Design Conventions below
+5. Update the Current Templates list in this file
+
+## Other Directories
+
+- `agent/`: Claude agent definition for generating learning tasks (`learning-task-generator.md`)
+- `docs/`: Planning documents
 
 ## Template Design Conventions
 

@@ -295,13 +295,14 @@
       <li>Change the <code>&lt;h1&gt;</code> to your quiz title and the subtitle to your topic.</li>
       <li>Edit the five <code>.sentence-card</code> blocks below with your own sentences.</li>
       <li>
-        Inside each sentence, find the <code>&lt;input class="blank"&gt;</code> element and set
+        Inside each sentence, find the <code>&lt;span class="blank-drop"&gt;</code> element and set
         <code>data-answer="correctWord"</code> to the expected answer (case-insensitive).
       </li>
       <li>
         To add more questions, copy and paste a <code>.sentence-card</code> block and update
         the question number, sentence, and <code>data-answer</code>.
       </li>
+      <li>Students drag word chips from the <strong>Word Bank</strong> into the blank slots.</li>
       <li>Adjust colours and fonts in the <code>:root</code> block at the top of the <code>&lt;style&gt;</code> section.</li>
     </ol>
   </div>
@@ -309,7 +310,7 @@
   <!-- ============================================================
        QUIZ CONTAINER
        Add or remove .sentence-card blocks as needed.
-       The JS automatically counts however many .blank inputs exist.
+       The JS automatically reads however many .blank-drop spans you add.
        ============================================================ -->
   <div class="quiz-container" id="quiz">
 
@@ -319,7 +320,7 @@
       <div class="q-number">Question N</div>
       <div class="sentence-text">
         Your sentence goes here, and the blank is
-        <input class="blank" type="text" data-answer="answer" placeholder="_____">
+        <span class="blank-drop" data-answer="answer"></span>
         right here in the sentence.
       </div>
       <div class="answer-reveal"></div>

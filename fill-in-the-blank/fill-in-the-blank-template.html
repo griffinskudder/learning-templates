@@ -137,44 +137,83 @@
       color: var(--text-color);
     }
 
-    /* ---- Blank input ---- */
-    /* HOW TO ADD A BLANK:
-       Place this element inline inside your sentence text:
-       <input class="blank" type="text" data-answer="yourAnswer" placeholder="_____">
-
-       - data-answer  : the correct answer (case-insensitive comparison)
-       - placeholder  : hint text shown before the student types
-    */
-    input.blank {
-      background: var(--input-bg);
-      border: 2px solid var(--input-border);
-      border-radius: 6px;
-      color: var(--text-color);
-      font-family: var(--font-family);
-      font-size: 1rem;
-      padding: 0.25rem 0.55rem;
-      width: 130px;
-      text-align: center;
-      outline: none;
-      transition: border-color 0.2s, background 0.2s;
-      vertical-align: middle;
+    /* ---- Word bank ---- */
+    #word-bank {
+      max-width: 780px;
+      margin: 0 auto 1.5rem;
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: var(--card-radius);
+      padding: 1rem 1.2rem;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.6rem;
+      align-items: center;
     }
 
-    input.blank:focus {
-      border-color: var(--input-focus);
+    #word-bank.drag-over {
+      border-color: var(--accent);
+    }
+
+    .word-bank-label {
+      width: 100%;
+      font-size: 0.78rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--muted-text);
+      margin-bottom: 0.2rem;
+    }
+
+    /* ---- Draggable word chips ---- */
+    .word-chip {
+      display: inline-block;
+      background: var(--input-bg);
+      border: 2px solid var(--accent);
+      border-radius: 20px;
+      padding: 0.25rem 0.8rem;
+      font-size: 0.95rem;
+      font-family: var(--font-family);
+      color: var(--text-color);
+      cursor: grab;
+      transition: transform 0.1s;
+      user-select: none;
+    }
+
+    .word-chip:hover  { transform: translateY(-2px); }
+    .word-chip:active { cursor: grabbing; }
+
+    /* ---- Blank drop zones ---- */
+    /* HOW TO ADD A BLANK:
+       Place this element inline inside your sentence text:
+       <span class="blank-drop" data-answer="yourAnswer"></span>
+
+       - data-answer : the correct answer (case-insensitive comparison)
+    */
+    .blank-drop {
+      display: inline-block;
+      vertical-align: middle;
+      min-width: 130px;
+      min-height: 36px;
+      border-bottom: 2px solid var(--input-border);
+      border-radius: 6px;
+      text-align: center;
+      line-height: 36px;
+      transition: border-color 0.2s, background 0.2s;
+    }
+
+    .blank-drop.drag-over {
+      border: 2px dashed var(--accent);
     }
 
     /* Correct / incorrect states applied by JS */
-    input.blank.correct {
+    .blank-drop.correct {
       border-color: var(--correct-color);
       background: rgba(72, 187, 120, 0.15);
-      color: var(--correct-color);
     }
 
-    input.blank.incorrect {
+    .blank-drop.incorrect {
       border-color: var(--incorrect-color);
       background: rgba(252, 129, 129, 0.12);
-      color: var(--incorrect-color);
     }
 
     /* Answer reveal shown below an incorrect input */
@@ -260,10 +299,6 @@
     @media (max-width: 520px) {
       header h1 {
         font-size: 1.6rem;
-      }
-
-      input.blank {
-        width: 100px;
       }
 
       .sentence-text {

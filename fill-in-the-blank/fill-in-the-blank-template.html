@@ -396,100 +396,199 @@
 
   <script>
     /* ============================================================
-       FILL-IN-THE-BLANK LOGIC
+       DRAG-AND-DROP LOGIC
        You do not need to edit this script.
-       It automatically reads however many .blank inputs you add.
+       It automatically reads however many .blank-drop spans you add.
        ============================================================ */
 
-    /* Check all blank inputs against their data-answer values */
+    var draggedChip = null;      /* chip element currently being dragged */
+    var dragSourceBlank = null;  /* .blank-drop the chip came from, or null if from word bank */
+
+    /* ---- Chip drag handlers ---- */
+    function onChipDragStart(event) {
+      draggedChip = event.target;
+      dragSourceBlank = event.target.parentElement.classList.contains('blank-drop')
+        ? event.target.parentElement : null;
+      event.dataTransfer.setData('text/plain', event.target.dataset.chipId);
+    }
+
+    function onChipDragEnd() {
+      draggedChip = null;
+      dragSourceBlank = null;
+    }
+
+    /* ---- Drop zone handlers ---- */
+    function onDropZoneDragOver(event) {
+      event.preventDefault();
+      event.currentTarget.classList.add('drag-over');
+    }
+
+    function onDropZoneDragLeave(event) {
+      if (event.currentTarget.contains(event.relatedTarget)) { return; }
+      event.currentTarget.classList.remove('drag-over');
+    }
+
+    function onDropZoneDrop(event) {
+      event.preventDefault();
+      var targetBlank = event.currentTarget;
+      targetBlank.classList.remove('drag-over');
+      if (!draggedChip) { return; }
+      if (draggedChip.parentElement === targetBlank) { return; }
+
+      /* Clear source blank feedback state */
+      if (dragSourceBlank) {
+        dragSourceBlank.classList.remove('correct', 'incorrect');
+      }
+
+      /* Handle displaced chip */
+      var displacedChip = targetBlank.querySelector('.word-chip');
+      if (displacedChip) {
+        if (dragSourceBlank) {
+          dragSourceBlank.appendChild(displacedChip); /* swap */
+        } else {
+          document.getElementById('word-bank').appendChild(displacedChip);
+        }
+      }
+
+      targetBlank.classList.remove('correct', 'incorrect');
+      targetBlank.appendChild(draggedChip);
+    }
+
+    /* ---- Word bank handlers ---- */
+    function onWordBankDragOver(event) {
+      event.preventDefault();
+      event.currentTarget.classList.add('drag-over');
+    }
+
+    function onWordBankDragLeave(event) {
+      if (event.currentTarget.contains(event.relatedTarget)) { return; }
+      event.currentTarget.classList.remove('drag-over');
+    }
+
+    function onWordBankDrop(event) {
+      event.preventDefault();
+      var wordBank = document.getElementById('word-bank');
+      wordBank.classList.remove('drag-over');
+      if (!draggedChip) { return; }
+      if (draggedChip.parentElement === wordBank) { return; }
+      if (dragSourceBlank) {
+        dragSourceBlank.classList.remove('correct', 'incorrect');
+      }
+      wordBank.appendChild(draggedChip);
+    }
+
+    /* ---- Check all blanks against their answers ---- */
     function checkAll() {
-      var blanks = document.querySelectorAll("input.blank");
+      var blanks = document.querySelectorAll('.blank-drop');
       var correct = 0;
       var total = blanks.length;
 
-      blanks.forEach(function (input) {
-        /* Grab the card containing this input to find the reveal div */
-        var card = input.closest(".sentence-card");
-        var reveal = card.querySelector(".answer-reveal");
+      blanks.forEach(function (blank) {
+        var card   = blank.closest('.sentence-card');
+        var reveal = card.querySelector('.answer-reveal');
 
-        /* Trim whitespace and compare case-insensitively */
-        var studentAnswer = input.value.trim().toLowerCase();
-        var correctAnswer = input.getAttribute("data-answer").trim().toLowerCase();
+        blank.classList.remove('correct', 'incorrect');
+        reveal.classList.remove('visible');
+        reveal.textContent = '';
 
-        /* Remove previous state classes */
-        input.classList.remove("correct", "incorrect");
-        reveal.classList.remove("visible");
-        reveal.textContent = "";
+        var chip          = blank.querySelector('.word-chip');
+        var studentAnswer = chip ? chip.textContent.trim().toLowerCase() : '';
+        var correctAnswer = blank.dataset.answer.trim().toLowerCase();
 
         if (studentAnswer === correctAnswer) {
-          input.classList.add("correct");
+          blank.classList.add('correct');
           correct = correct + 1;
         } else {
-          input.classList.add("incorrect");
-          /* Show the correct answer below the input */
-          reveal.textContent = "Correct answer: " + input.getAttribute("data-answer");
-          reveal.classList.add("visible");
+          blank.classList.add('incorrect');
+          reveal.textContent = 'Correct answer: ' + blank.dataset.answer;
+          reveal.classList.add('visible');
         }
       });
 
-      /* Show score */
-      var scoreDisplay = document.getElementById("score-display");
-      var scoreText = document.getElementById("score-text");
-      var scoreNote = document.getElementById("score-note");
+      var scoreDisplay = document.getElementById('score-display');
+      var scoreText    = document.getElementById('score-text');
+      var scoreNote    = document.getElementById('score-note');
 
-      scoreText.textContent = "You got " + correct + " / " + total + " correct!";
+      scoreText.textContent = 'You got ' + correct + ' / ' + total + ' correct!';
 
       if (correct === total) {
-        scoreNote.textContent = "Excellent work! Full marks!";
+        scoreNote.textContent = 'Excellent work! Full marks!';
       } else if (correct >= Math.ceil(total / 2)) {
-        scoreNote.textContent = "Good effort. Review the highlighted answers and try again.";
+        scoreNote.textContent = 'Good effort. Review the highlighted answers and try again.';
       } else {
-        scoreNote.textContent = "Keep practising. Read each sentence carefully and try again.";
+        scoreNote.textContent = 'Keep practising. Read each sentence carefully and try again.';
       }
 
-      scoreDisplay.classList.add("visible");
-
-      /* Scroll score into view smoothly */
-      scoreDisplay.scrollIntoView({ behavior: "smooth", block: "nearest" });
+      scoreDisplay.classList.add('visible');
+      scoreDisplay.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     }
 
-    /* Reset all inputs and styling */
+    /* ---- Reset all blanks and re-shuffle word bank ---- */
     function tryAgain() {
-      var blanks = document.querySelectorAll("input.blank");
+      var blanks   = document.querySelectorAll('.blank-drop');
+      var wordBank = document.getElementById('word-bank');
 
-      blanks.forEach(function (input) {
-        input.value = "";
-        input.classList.remove("correct", "incorrect");
-
-        var card = input.closest(".sentence-card");
-        var reveal = card.querySelector(".answer-reveal");
-        reveal.classList.remove("visible");
-        reveal.textContent = "";
+      blanks.forEach(function (blank) {
+        var chip = blank.querySelector('.word-chip');
+        if (chip) { wordBank.appendChild(chip); }
+        blank.classList.remove('correct', 'incorrect');
       });
 
-      /* Hide score */
-      var scoreDisplay = document.getElementById("score-display");
-      scoreDisplay.classList.remove("visible");
+      var chips = Array.prototype.slice.call(wordBank.querySelectorAll('.word-chip'));
+      for (var i = chips.length - 1; i > 0; i--) {
+        var j    = Math.floor(Math.random() * (i + 1));
+        var temp = chips[i]; chips[i] = chips[j]; chips[j] = temp;
+      }
+      chips.forEach(function (c) { wordBank.appendChild(c); });
 
-      /* Focus the first blank */
-      blanks[0].focus();
+      document.querySelectorAll('.sentence-card').forEach(function (card) {
+        var reveal = card.querySelector('.answer-reveal');
+        reveal.classList.remove('visible');
+        reveal.textContent = '';
+      });
+
+      document.getElementById('score-display').classList.remove('visible');
     }
 
-    /* Allow pressing Enter to move to the next blank */
-    document.addEventListener("keydown", function (event) {
-      if (event.key !== "Enter") { return; }
-      if (!event.target.classList.contains("blank")) { return; }
+    /* ---- Build word bank from all blank answers ---- */
+    function buildWordBank() {
+      var wordBank = document.getElementById('word-bank');
+      var blanks   = document.querySelectorAll('.blank-drop');
+      var answers  = [];
 
-      var blanks = Array.prototype.slice.call(document.querySelectorAll("input.blank"));
-      var currentIndex = blanks.indexOf(event.target);
+      blanks.forEach(function (blank) {
+        answers.push(blank.dataset.answer);
+      });
 
-      if (currentIndex < blanks.length - 1) {
-        blanks[currentIndex + 1].focus();
-      } else {
-        /* Last blank — trigger check */
-        checkAll();
+      /* Fisher-Yates shuffle */
+      for (var i = answers.length - 1; i > 0; i--) {
+        var j    = Math.floor(Math.random() * (i + 1));
+        var temp = answers[i]; answers[i] = answers[j]; answers[j] = temp;
       }
-    });
+
+      answers.forEach(function (answer, i) {
+        var chip = document.createElement('div');
+        chip.className = 'word-chip';
+        chip.setAttribute('draggable', 'true');
+        chip.dataset.chipId = 'chip-' + i;
+        chip.textContent = answer;
+        chip.addEventListener('dragstart', onChipDragStart);
+        chip.addEventListener('dragend',   onChipDragEnd);
+        wordBank.appendChild(chip);
+      });
+
+      document.querySelectorAll('.blank-drop').forEach(function (blank) {
+        blank.addEventListener('dragover',  onDropZoneDragOver);
+        blank.addEventListener('dragleave', onDropZoneDragLeave);
+        blank.addEventListener('drop',      onDropZoneDrop);
+      });
+
+      wordBank.addEventListener('dragover',  onWordBankDragOver);
+      wordBank.addEventListener('dragleave', onWordBankDragLeave);
+      wordBank.addEventListener('drop',      onWordBankDrop);
+    }
+
+    buildWordBank();
   </script>
 
 </body>

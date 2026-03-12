@@ -343,6 +343,16 @@
   </div>
 
   <!-- ============================================================
+       WORD BANK
+       All answer words appear here as draggable chips.
+       Students drag chips into the blank slots in each sentence.
+       ============================================================ -->
+  <div id="word-bank">
+    <div class="word-bank-label">Word Bank</div>
+    <!-- chips are injected here automatically by JavaScript -->
+  </div>
+
+  <!-- ============================================================
        QUIZ CONTAINER
        Add or remove .sentence-card blocks as needed.
        The JS automatically reads however many .blank-drop spans you add.
@@ -368,7 +378,7 @@
       <div class="q-number">Question 1</div>
       <div class="sentence-text">
         Water boils at
-        <input class="blank" type="text" data-answer="100" placeholder="_____">
+        <span class="blank-drop" data-answer="100"></span>
         degrees Celsius at sea level.
       </div>
       <div class="answer-reveal"></div>
@@ -379,7 +389,7 @@
       <div class="q-number">Question 2</div>
       <div class="sentence-text">
         The three states of matter are solid, liquid, and
-        <input class="blank" type="text" data-answer="gas" placeholder="_____">.
+        <span class="blank-drop" data-answer="gas"></span>.
       </div>
       <div class="answer-reveal"></div>
     </div>
@@ -389,7 +399,7 @@
       <div class="q-number">Question 3</div>
       <div class="sentence-text">
         When a solid is heated and turns into a liquid, the process is called
-        <input class="blank" type="text" data-answer="melting" placeholder="_____">.
+        <span class="blank-drop" data-answer="melting"></span>.
       </div>
       <div class="answer-reveal"></div>
     </div>
@@ -399,7 +409,7 @@
       <div class="q-number">Question 4</div>
       <div class="sentence-text">
         Ice is water in its
-        <input class="blank" type="text" data-answer="solid" placeholder="_____">
+        <span class="blank-drop" data-answer="solid"></span>
         state.
       </div>
       <div class="answer-reveal"></div>
@@ -410,7 +420,7 @@
       <div class="q-number">Question 5</div>
       <div class="sentence-text">
         The change from a liquid to a gas is called
-        <input class="blank" type="text" data-answer="evaporation" placeholder="_____">.
+        <span class="blank-drop" data-answer="evaporation"></span>.
       </div>
       <div class="answer-reveal"></div>
     </div>

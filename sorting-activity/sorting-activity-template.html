@@ -76,7 +76,9 @@
 
     /* ---------- Reset button ---------- */
     .controls {
-      text-align: center;
+      display: flex;
+      justify-content: center;
+      gap: 12px;
       margin-bottom: 20px;
     }
     .btn-reset {
@@ -262,6 +264,48 @@
     .dot-a { background: var(--accent-a); }
     .dot-b { background: var(--accent-b); }
 
+    /* ---------- Check Answers button ---------- */
+    .btn-check {
+      background: var(--accent-b);
+      border: 2px solid var(--accent-b);
+      color: #fff;
+      padding: 8px 22px;
+      border-radius: var(--btn-radius);
+      cursor: pointer;
+      font-size: 0.9rem;
+      font-family: var(--font-family);
+      transition: opacity 0.2s;
+    }
+    .btn-check:disabled {
+      opacity: 0.35;
+      cursor: not-allowed;
+    }
+    .btn-check:not(:disabled):hover {
+      opacity: 0.85;
+    }
+
+    /* ---------- Card feedback states ---------- */
+    /* Selectors use 3-class specificity (.column-x .card.card-state) to beat
+       the existing 2-class sorted-card border rules (.column-x .card).       */
+    .column-a .card.card-correct,
+    .column-b .card.card-correct {
+      border-color: #4caf50;
+      border-left: 4px solid #4caf50;
+    }
+    .column-a .card.card-wrong,
+    .column-b .card.card-wrong {
+      border-color: #e94560;
+      border-left: 4px solid #e94560;
+    }
+    .card-result-icon {
+      font-weight: bold;
+      margin-left: 6px;
+    }
+    .column-a .card.card-correct .card-result-icon,
+    .column-b .card.card-correct .card-result-icon { color: #4caf50; }
+    .column-a .card.card-wrong .card-result-icon,
+    .column-b .card.card-wrong .card-result-icon { color: #e94560; }
+
     /* ---------- Responsive ---------- */
     @media (max-width: 600px) {
       .categories { flex-direction: column; }
@@ -279,7 +323,7 @@
     <ol>
       <li>Change the <code>&lt;title&gt;</code> tag and the <code>&lt;h1&gt;</code> heading to your topic.</li>
       <li>Edit the two <code>data-name</code> attributes on the <code>.column</code> divs to set your category names (e.g. <code>data-name="Advantages"</code>). The column headers update automatically.</li>
-      <li>Find the <code>&lt;!-- ITEM POOL --&gt;</code> section below and edit the 8 <code>data-label</code> values on each <code>&lt;div class="card" ...&gt;</code> to your own items.</li>
+      <li>Find the <code>&lt;!-- ITEM POOL --&gt;</code> section below and edit each <code>&lt;div class="card"&gt;</code>: set <code>data-label</code> to your item text and <code>data-answer</code> to <code>"A"</code> or <code>"B"</code> (uppercase) for the correct column. If <code>data-answer</code> is omitted, Check Answers will mark that card as wrong.</li>
       <li>Add or remove <code>&lt;div class="card" ...&gt;</code> blocks to change the number of items.</li>
       <li>Adjust colours in the <code>:root</code> block at the top of the <code>&lt;style&gt;</code> section.</li>
       <li>Delete this yellow instructions box before sharing with students.</li>
@@ -299,6 +343,7 @@
 
   <div class="controls">
     <button class="btn-reset" id="resetBtn">Reset All</button>
+    <button class="btn-check" id="checkBtn" disabled>Check Answers</button>
   </div>
 
   <!-- ============================================================
@@ -310,7 +355,10 @@
     <p class="pool-label">Items to sort</p>
     <div class="pool" id="pool">
 
-      <!-- STUDENT: Replace "Item 1" with your first item text, and so on for each card below -->
+      <!-- STUDENT: For each card below:
+           - Replace the data-label value and the <span class="card-text"> text with your item text
+           - Set data-answer="A" or data-answer="B" (uppercase) to the correct category column
+             If data-answer is omitted, Check Answers will mark that card as wrong -->
 
       <div class="card" data-label="Item 1">
         <span class="card-text">Item 1</span>
@@ -396,6 +444,10 @@
     var countAEl = document.getElementById('countA');
     var countBEl = document.getElementById('countB');
 
+    var scoreBar;
+    var scoreBarOriginal = '';
+    var checkBtn;
+
     // Build sort buttons on every card in the pool
     function buildPoolButtons(card) {
       // Remove any existing action div first
@@ -446,6 +498,7 @@
       }
       buildBackButton(card);
       updateCounts();
+      updateCheckButton();
     }
 
     // Return a sorted card back to the pool
@@ -453,12 +506,45 @@
       pool.appendChild(card);
       buildPoolButtons(card);
       updateCounts();
+      updateCheckButton();
     }
 
     // Update the item count display
     function updateCounts() {
       countAEl.textContent = bodyA.querySelectorAll('.card').length;
       countBEl.textContent = bodyB.querySelectorAll('.card').length;
+    }
+
+    // Enable Check Answers only when every card has been sorted (pool is empty)
+    function updateCheckButton() {
+      checkBtn.disabled = pool.querySelectorAll('.card').length !== 0;
+    }
+
+    // Mark each sorted card correct or wrong, show score, lock cards
+    function checkAnswers() {
+      var cards = document.querySelectorAll('#bodyA .card, #bodyB .card');
+      var correctCount = 0;
+      var total = cards.length;
+
+      cards.forEach(function(card) {
+        var answer = card.getAttribute('data-answer') || '';
+        var inA = card.parentNode === bodyA;
+        var isCorrect = (inA && answer === 'A') || (!inA && answer === 'B');
+
+        if (isCorrect) { correctCount++; }
+        card.classList.add(isCorrect ? 'card-correct' : 'card-wrong');
+
+        var icon = document.createElement('span');
+        icon.className = 'card-result-icon';
+        icon.textContent = isCorrect ? '\u2713' : '\u2717';
+        card.querySelector('.card-text').appendChild(icon);
+
+        var actions = card.querySelector('.card-actions');
+        if (actions) { actions.parentNode.removeChild(actions); }
+      });
+
+      scoreBar.innerHTML = '<span>' + correctCount + ' / ' + total + ' correct</span>';
+      checkBtn.disabled = true;
     }
 
     // Reset all cards back to the pool
@@ -469,7 +555,22 @@
         pool.appendChild(card);
         buildPoolButtons(card);
       });
+
+      // Remove any feedback classes and tick/cross icons from all cards
+      document.querySelectorAll('.card').forEach(function(card) {
+        card.classList.remove('card-correct', 'card-wrong');
+        var icon = card.querySelector('.card-result-icon');
+        if (icon) { icon.parentNode.removeChild(icon); }
+      });
+
+      // Restore score bar (must happen before updateCounts so #countA/#countB exist)
+      scoreBar.innerHTML = scoreBarOriginal;
+      // Re-query because innerHTML replacement made the old references stale.
+      // Do NOT add var — these must overwrite the module-level variables.
+      countAEl = document.getElementById('countA');
+      countBEl = document.getElementById('countB');
       updateCounts();
+      checkBtn.disabled = true;
     }
 
     // Initialise — attach sort buttons to all cards already in the pool
@@ -479,6 +580,10 @@
         buildPoolButtons(card);
       });
       updateCounts();
+      scoreBar = document.querySelector('.score-bar');
+      scoreBarOriginal = scoreBar.innerHTML;
+      checkBtn = document.getElementById('checkBtn');
+      checkBtn.addEventListener('click', checkAnswers);
     }
 
     document.getElementById('resetBtn').addEventListener('click', resetAll);

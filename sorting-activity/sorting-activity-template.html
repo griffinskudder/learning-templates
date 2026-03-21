@@ -583,10 +583,9 @@
       scoreBar = document.querySelector('.score-bar');
       scoreBarOriginal = scoreBar.innerHTML;
       checkBtn = document.getElementById('checkBtn');
+      document.getElementById('resetBtn').addEventListener('click', resetAll);
       checkBtn.addEventListener('click', checkAnswers);
     }
-
-    document.getElementById('resetBtn').addEventListener('click', resetAll);
 
     init();
   </script>

@@ -51,7 +51,9 @@
     }
 
     .controls {
-      text-align: center;
+      display: flex;
+      justify-content: center;
+      gap: 12px;
       margin-bottom: 20px;
     }
     .btn-reset {
@@ -230,6 +232,46 @@
     .dot-a { background: var(--accent-a); }
     .dot-b { background: var(--accent-b); }
 
+    /* ---------- Check Answers button ---------- */
+    .btn-check {
+      background: var(--accent-b);
+      border: 2px solid var(--accent-b);
+      color: #fff;
+      padding: 8px 22px;
+      border-radius: var(--btn-radius);
+      cursor: pointer;
+      font-size: 0.9rem;
+      font-family: var(--font-family);
+      transition: opacity 0.2s;
+    }
+    .btn-check:disabled {
+      opacity: 0.35;
+      cursor: not-allowed;
+    }
+    .btn-check:not(:disabled):hover {
+      opacity: 0.85;
+    }
+
+    /* ---------- Card feedback states ---------- */
+    .column-a .card.card-correct,
+    .column-b .card.card-correct {
+      border-color: #4caf50;
+      border-left: 4px solid #4caf50;
+    }
+    .column-a .card.card-wrong,
+    .column-b .card.card-wrong {
+      border-color: #e94560;
+      border-left: 4px solid #e94560;
+    }
+    .card-result-icon {
+      font-weight: bold;
+      margin-left: 6px;
+    }
+    .column-a .card.card-correct .card-result-icon,
+    .column-b .card.card-correct .card-result-icon { color: #4caf50; }
+    .column-a .card.card-wrong .card-result-icon,
+    .column-b .card.card-wrong .card-result-icon { color: #e94560; }
+
     @media (max-width: 600px) {
       .categories { flex-direction: column; }
       .card { width: 140px; }
@@ -245,41 +287,42 @@
 
   <div class="controls">
     <button class="btn-reset" id="resetBtn">Reset All</button>
+    <button class="btn-check" id="checkBtn" disabled>Check Answers</button>
   </div>
 
   <section class="pool-section">
     <p class="pool-label">Items to sort</p>
     <div class="pool" id="pool">
 
-      <div class="card" data-label="More job opportunities">
+      <div class="card" data-label="More job opportunities" data-answer="A">
         <span class="card-text">More job opportunities</span>
       </div>
 
-      <div class="card" data-label="Traffic jams">
+      <div class="card" data-label="Traffic jams" data-answer="B">
         <span class="card-text">Traffic jams</span>
       </div>
 
-      <div class="card" data-label="Better hospitals and schools">
+      <div class="card" data-label="Better hospitals and schools" data-answer="A">
         <span class="card-text">Better hospitals and schools</span>
       </div>
 
-      <div class="card" data-label="Air pollution from cars">
+      <div class="card" data-label="Air pollution from cars" data-answer="B">
         <span class="card-text">Air pollution from cars</span>
       </div>
 
-      <div class="card" data-label="People want good schools">
+      <div class="card" data-label="People want good schools" data-answer="A">
         <span class="card-text">People want good schools</span>
       </div>
 
-      <div class="card" data-label="Farmland is cleared for buildings">
+      <div class="card" data-label="Farmland is cleared for buildings" data-answer="B">
         <span class="card-text">Farmland is cleared for buildings</span>
       </div>
 
-      <div class="card" data-label="Factories need workers">
+      <div class="card" data-label="Factories need workers" data-answer="A">
         <span class="card-text">Factories need workers</span>
       </div>
 
-      <div class="card" data-label="Housing shortages">
+      <div class="card" data-label="Housing shortages" data-answer="B">
         <span class="card-text">Housing shortages</span>
       </div>
 
@@ -318,6 +361,10 @@
     var bodyB = document.getElementById('bodyB');
     var countAEl = document.getElementById('countA');
     var countBEl = document.getElementById('countB');
+
+    var scoreBar;
+    var scoreBarOriginal = '';
+    var checkBtn;
 
     function buildPoolButtons(card) {
       var old = card.querySelector('.card-actions');
@@ -365,17 +412,49 @@
       }
       buildBackButton(card);
       updateCounts();
+      updateCheckButton();
     }
 
     function returnToPool(card) {
       pool.appendChild(card);
       buildPoolButtons(card);
       updateCounts();
+      updateCheckButton();
     }
 
     function updateCounts() {
       countAEl.textContent = bodyA.querySelectorAll('.card').length;
       countBEl.textContent = bodyB.querySelectorAll('.card').length;
+    }
+
+    function updateCheckButton() {
+      checkBtn.disabled = pool.querySelectorAll('.card').length !== 0;
+    }
+
+    function checkAnswers() {
+      var cards = document.querySelectorAll('#bodyA .card, #bodyB .card');
+      var correctCount = 0;
+      var total = cards.length;
+
+      cards.forEach(function(card) {
+        var answer = card.getAttribute('data-answer') || '';
+        var inA = card.parentNode === bodyA;
+        var isCorrect = (inA && answer === 'A') || (!inA && answer === 'B');
+
+        if (isCorrect) { correctCount++; }
+        card.classList.add(isCorrect ? 'card-correct' : 'card-wrong');
+
+        var icon = document.createElement('span');
+        icon.className = 'card-result-icon';
+        icon.textContent = isCorrect ? '\u2713' : '\u2717';
+        card.querySelector('.card-text').appendChild(icon);
+
+        var actions = card.querySelector('.card-actions');
+        if (actions) { actions.parentNode.removeChild(actions); }
+      });
+
+      scoreBar.innerHTML = '<span>' + correctCount + ' / ' + total + ' correct</span>';
+      checkBtn.disabled = true;
     }
 
     function resetAll() {
@@ -384,7 +463,18 @@
         pool.appendChild(card);
         buildPoolButtons(card);
       });
+
+      document.querySelectorAll('.card').forEach(function(card) {
+        card.classList.remove('card-correct', 'card-wrong');
+        var icon = card.querySelector('.card-result-icon');
+        if (icon) { icon.parentNode.removeChild(icon); }
+      });
+
+      scoreBar.innerHTML = scoreBarOriginal;
+      countAEl = document.getElementById('countA');
+      countBEl = document.getElementById('countB');
       updateCounts();
+      checkBtn.disabled = true;
     }
 
     function init() {
@@ -393,9 +483,12 @@
         buildPoolButtons(card);
       });
       updateCounts();
+      scoreBar = document.querySelector('.score-bar');
+      scoreBarOriginal = scoreBar.innerHTML;
+      checkBtn = document.getElementById('checkBtn');
+      document.getElementById('resetBtn').addEventListener('click', resetAll);
+      checkBtn.addEventListener('click', checkAnswers);
     }
-
-    document.getElementById('resetBtn').addEventListener('click', resetAll);
 
     init();
   </script>

@@ -66,6 +66,48 @@
     }
 
     /* ============================================================
+       PINS
+
+       Each pin is a <button> containing an <svg><use href="#icon-..."/></svg>.
+       There is NO background box — the icon is the pin.
+
+       HOW TO ADD A PIN
+       ────────────────
+       1. Copy a <button class="pin-btn"> block inside .image-wrap
+       2. Give it a unique data-popup value
+       3. Adjust top / left percentages to place it on the image
+       4. Change <use href="#icon-..."/> to pick the icon
+       5. Update aria-label to describe what the pin represents
+       6. Add a matching <div class="popup" id="...">
+       ============================================================ */
+    .pin-btn {
+      position: absolute;
+      transform: translate(-50%, -50%);
+      background: none;
+      border: none;
+      padding: 0;
+      cursor: pointer;
+      line-height: 0;                  /* remove inline-svg whitespace */
+      transition: transform .15s ease, filter .15s ease;
+      filter: drop-shadow(0 2px 4px rgba(0,0,0,.6));
+    }
+    .pin-icon {
+      width: var(--icon-size);
+      height: var(--icon-size);
+      display: block;
+      pointer-events: none;            /* clicks go to the button */
+    }
+    .pin-btn:hover {
+      transform: translate(-50%, -50%) scale(1.15);
+      filter: drop-shadow(0 4px 8px rgba(0,0,0,.75));
+    }
+    .pin-btn:focus-visible {
+      outline: 3px solid var(--accent-light);
+      outline-offset: 4px;
+      border-radius: 4px;
+    }
+
+    /* ============================================================
        POPUPS
        ============================================================ */
     .popup {
@@ -354,7 +396,97 @@
        onerror="this.src=this.getAttribute('data-fallback')"
        data-fallback="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='900' height='500'%3E%3Crect width='900' height='500' fill='%23162816'/%3E%3Ctext x='50%25' y='48%25' font-family='Georgia' font-size='22' fill='%234caf50' text-anchor='middle' dominant-baseline='middle'%3EReplace src with your image%3C/text%3E%3Ctext x='50%25' y='57%25' font-family='Segoe UI' font-size='13' fill='%23779977' text-anchor='middle' dominant-baseline='middle'%3Ee.g. src=%22my-street.jpg%22%3C/text%3E%3C/svg%3E">
 
-  <!-- Pins and popups are added in later tasks -->
+  <!-- ============================================================
+       PINS — one sample per icon
+       ============================================================ -->
+
+  <!-- Pin 1 — Bug -->
+  <button class="pin-btn"
+          data-popup="popup1"
+          aria-label="Bug location"
+          style="top: 40%; left: 22%;">
+    <svg class="pin-icon" viewBox="0 0 64 64" aria-hidden="true"><use href="#icon-bug"/></svg>
+  </button>
+
+  <!-- Pin 2 — Tree -->
+  <button class="pin-btn"
+          data-popup="popup2"
+          aria-label="Tree location"
+          style="top: 55%; left: 48%;">
+    <svg class="pin-icon" viewBox="0 0 64 64" aria-hidden="true"><use href="#icon-tree"/></svg>
+  </button>
+
+  <!-- Pin 3 — Beehive -->
+  <button class="pin-btn"
+          data-popup="popup3"
+          aria-label="Beehive location"
+          style="top: 30%; left: 72%;">
+    <svg class="pin-icon" viewBox="0 0 64 64" aria-hidden="true"><use href="#icon-beehive"/></svg>
+  </button>
+
+  <!-- Pin 4 — Garden -->
+  <button class="pin-btn"
+          data-popup="popup4"
+          aria-label="Garden location"
+          style="top: 70%; left: 80%;">
+    <svg class="pin-icon" viewBox="0 0 64 64" aria-hidden="true"><use href="#icon-garden"/></svg>
+  </button>
+
+  <!-- ============================================================
+       POPUPS
+       ============================================================ -->
+
+  <!-- Popup 1 — Bug -->
+  <div class="popup" id="popup1" style="top: 10%; left: 5%;">
+    <div class="popup-header">
+      <h2>Bug</h2>
+      <button class="close-btn" aria-label="Close">&#10005;</button>
+    </div>
+    <div class="popup-body">
+      <p>Write your description of the <strong>bug</strong> here.
+         You could describe the species, what it eats, why it is helpful
+         in an urban space, or where it likes to live.</p>
+    </div>
+  </div>
+
+  <!-- Popup 2 — Tree -->
+  <div class="popup" id="popup2" style="top: 25%; left: 30%;">
+    <div class="popup-header">
+      <h2>Tree</h2>
+      <button class="close-btn" aria-label="Close">&#10005;</button>
+    </div>
+    <div class="popup-body">
+      <p>Write your description of the <strong>tree</strong> here.
+         Consider its species, how much shade it provides, how it helps
+         cool the street, and what birds or insects live in it.</p>
+    </div>
+  </div>
+
+  <!-- Popup 3 — Beehive -->
+  <div class="popup" id="popup3" style="top: 5%; left: 50%;">
+    <div class="popup-header">
+      <h2>Beehive</h2>
+      <button class="close-btn" aria-label="Close">&#10005;</button>
+    </div>
+    <div class="popup-body">
+      <p>Write your description of the <strong>beehive</strong> here.
+         You might explain why bees matter for pollination and what plants
+         in the surrounding area they visit.</p>
+    </div>
+  </div>
+
+  <!-- Popup 4 — Garden -->
+  <div class="popup" id="popup4" style="top: 45%; left: 50%;">
+    <div class="popup-header">
+      <h2>Garden</h2>
+      <button class="close-btn" aria-label="Close">&#10005;</button>
+    </div>
+    <div class="popup-body">
+      <p>Write your description of the <strong>garden</strong> here.
+         Consider what is grown, who looks after it, and how it changes
+         the feel of the street.</p>
+    </div>
+  </div>
 
 </div><!-- end .image-wrap -->
 

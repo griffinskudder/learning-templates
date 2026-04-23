@@ -185,8 +185,161 @@
 
 
 <!-- ============================================================
-     ICON LIBRARY — added in a later step
+     ICON LIBRARY
+
+     Four reusable SVG icons drawn as <symbol>s. Each pin button
+     below references one via <use href="#icon-..."/>.
+
+     Available icons:
+       #icon-bug       — ladybug
+       #icon-tree      — broadleaf tree
+       #icon-beehive   — traditional woven skep hive
+       #icon-garden    — flowerbed / planter
+
+     HOW TO ADD A NEW ICON
+     ─────────────────────
+     1. Copy one of the <symbol> blocks below
+     2. Give it a new unique id, e.g. id="icon-butterfly"
+     3. Redraw the shapes inside
+     4. Reference it from a pin with <use href="#icon-butterfly"/>
+
+     HOW TO CHANGE COLOURS OF AN ICON
+     ────────────────────────────────
+     Colours are baked into each <symbol> via the fill="#..."
+     attributes. Edit the fills directly. These icons are designed
+     to look realistic, so they do NOT follow the --accent CSS
+     variable.
      ============================================================ -->
+<svg xmlns="http://www.w3.org/2000/svg" style="position:absolute; width:0; height:0; overflow:hidden;" aria-hidden="true">
+  <defs>
+
+    <!-- LADYBUG -->
+    <symbol id="icon-bug" viewBox="0 0 64 64">
+      <!-- Legs -->
+      <path d="M 18 42 L 8 48 M 46 42 L 56 48 M 20 32 L 6 32 M 44 32 L 58 32 M 20 22 L 10 14 M 44 22 L 54 14"
+            stroke="#111" stroke-width="2" stroke-linecap="round" fill="none"/>
+      <!-- Red shell -->
+      <ellipse cx="32" cy="34" rx="20" ry="17" fill="#c62828"/>
+      <!-- Shell highlight -->
+      <ellipse cx="24" cy="26" rx="6" ry="3" fill="#ef5350" opacity="0.6"/>
+      <!-- Wing division -->
+      <path d="M 32 18 L 32 50" stroke="#111" stroke-width="1.5"/>
+      <!-- Spots -->
+      <circle cx="22" cy="28" r="2.6" fill="#111"/>
+      <circle cx="42" cy="28" r="2.6" fill="#111"/>
+      <circle cx="20" cy="40" r="2.2" fill="#111"/>
+      <circle cx="44" cy="40" r="2.2" fill="#111"/>
+      <circle cx="32" cy="44" r="2.2" fill="#111"/>
+      <!-- Head -->
+      <ellipse cx="32" cy="18" rx="9" ry="7" fill="#111"/>
+      <!-- Eyes -->
+      <circle cx="28" cy="17" r="1.3" fill="#fff"/>
+      <circle cx="36" cy="17" r="1.3" fill="#fff"/>
+      <!-- Antennae -->
+      <path d="M 28 12 Q 24 6 22 5 M 36 12 Q 40 6 42 5" stroke="#111" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+      <circle cx="22" cy="5" r="1.5" fill="#111"/>
+      <circle cx="42" cy="5" r="1.5" fill="#111"/>
+    </symbol>
+
+    <!-- TREE -->
+    <symbol id="icon-tree" viewBox="0 0 64 64">
+      <!-- Ground shadow -->
+      <ellipse cx="32" cy="60" rx="18" ry="2.5" fill="#000" opacity="0.25"/>
+      <!-- Trunk -->
+      <rect x="28" y="40" width="8" height="20" fill="#6d4c2e"/>
+      <rect x="34" y="40" width="2" height="20" fill="#4a3219"/>
+      <!-- Bark detail -->
+      <path d="M 30 44 Q 31 48 30 52 M 33 42 Q 34 50 33 58" stroke="#4a3219" stroke-width="0.8" fill="none"/>
+      <!-- Canopy layers (dark to light) -->
+      <ellipse cx="32" cy="30" rx="24" ry="20" fill="#1b5e20"/>
+      <ellipse cx="24" cy="22" rx="13" ry="12" fill="#2e7d32"/>
+      <ellipse cx="40" cy="24" rx="12" ry="11" fill="#2e7d32"/>
+      <ellipse cx="32" cy="16" rx="11" ry="10" fill="#43a047"/>
+      <!-- Leaf highlights -->
+      <circle cx="22" cy="16" r="2" fill="#81c784" opacity="0.8"/>
+      <circle cx="38" cy="12" r="2" fill="#81c784" opacity="0.8"/>
+      <circle cx="44" cy="22" r="2" fill="#81c784" opacity="0.8"/>
+      <circle cx="18" cy="28" r="2" fill="#81c784" opacity="0.8"/>
+      <circle cx="30" cy="10" r="1.5" fill="#c8e6c9" opacity="0.9"/>
+    </symbol>
+
+    <!-- BEEHIVE (woven skep) -->
+    <symbol id="icon-beehive" viewBox="0 0 64 64">
+      <!-- Ground shadow -->
+      <ellipse cx="32" cy="58" rx="22" ry="2.5" fill="#000" opacity="0.25"/>
+      <!-- Base plank -->
+      <rect x="8" y="52" width="48" height="5" fill="#5d4037" rx="1"/>
+      <!-- Skep rows from bottom to top -->
+      <ellipse cx="32" cy="50" rx="22" ry="5" fill="#8d6e3a"/>
+      <ellipse cx="32" cy="44" rx="21" ry="5" fill="#a9843d"/>
+      <ellipse cx="32" cy="38" rx="19" ry="5" fill="#8d6e3a"/>
+      <ellipse cx="32" cy="32" rx="16" ry="5" fill="#a9843d"/>
+      <ellipse cx="32" cy="26" rx="13" ry="5" fill="#8d6e3a"/>
+      <ellipse cx="32" cy="20" rx="9" ry="4" fill="#a9843d"/>
+      <ellipse cx="32" cy="15" rx="5" ry="3" fill="#8d6e3a"/>
+      <!-- Top knob -->
+      <circle cx="32" cy="12" r="2" fill="#5d4037"/>
+      <!-- Entrance -->
+      <ellipse cx="32" cy="50" rx="3" ry="3.5" fill="#2a1a0a"/>
+      <!-- Bee 1 (right) -->
+      <g transform="translate(50 26)">
+        <ellipse cx="0" cy="0" rx="3" ry="2" fill="#f9a825"/>
+        <path d="M -1.5 -1.5 L -1.5 1.5 M 1 -1.5 L 1 1.5" stroke="#111" stroke-width="0.9"/>
+        <ellipse cx="1" cy="-2" rx="2" ry="1.2" fill="#eceff1" opacity="0.85"/>
+      </g>
+      <!-- Bee 2 (left) -->
+      <g transform="translate(12 34)">
+        <ellipse cx="0" cy="0" rx="2.5" ry="1.7" fill="#f9a825"/>
+        <path d="M -1.2 -1.3 L -1.2 1.3 M 0.8 -1.3 L 0.8 1.3" stroke="#111" stroke-width="0.8"/>
+        <ellipse cx="-0.5" cy="-1.6" rx="1.6" ry="1" fill="#eceff1" opacity="0.85"/>
+      </g>
+    </symbol>
+
+    <!-- GARDEN (planter with flowers) -->
+    <symbol id="icon-garden" viewBox="0 0 64 64">
+      <!-- Ground shadow -->
+      <ellipse cx="32" cy="60" rx="26" ry="2.5" fill="#000" opacity="0.25"/>
+      <!-- Planter body -->
+      <rect x="6" y="44" width="52" height="14" fill="#6d4c2e" rx="1"/>
+      <!-- Planter rim -->
+      <rect x="4" y="42" width="56" height="4" fill="#8d6a44" rx="1"/>
+      <!-- Planter wood grain -->
+      <line x1="16" y1="46" x2="16" y2="57" stroke="#4a3219" stroke-width="0.6"/>
+      <line x1="28" y1="46" x2="28" y2="57" stroke="#4a3219" stroke-width="0.6"/>
+      <line x1="40" y1="46" x2="40" y2="57" stroke="#4a3219" stroke-width="0.6"/>
+      <line x1="52" y1="46" x2="52" y2="57" stroke="#4a3219" stroke-width="0.6"/>
+      <!-- Stems -->
+      <line x1="14" y1="42" x2="14" y2="28" stroke="#2e7d32" stroke-width="1.8"/>
+      <line x1="24" y1="42" x2="24" y2="20" stroke="#2e7d32" stroke-width="1.8"/>
+      <line x1="34" y1="42" x2="34" y2="24" stroke="#2e7d32" stroke-width="1.8"/>
+      <line x1="44" y1="42" x2="44" y2="18" stroke="#2e7d32" stroke-width="1.8"/>
+      <line x1="52" y1="42" x2="52" y2="26" stroke="#2e7d32" stroke-width="1.8"/>
+      <!-- Leaves -->
+      <ellipse cx="17" cy="34" rx="3.5" ry="1.8" fill="#43a047" transform="rotate(30 17 34)"/>
+      <ellipse cx="27" cy="30" rx="3.5" ry="1.8" fill="#43a047" transform="rotate(-30 27 30)"/>
+      <ellipse cx="38" cy="30" rx="3.5" ry="1.8" fill="#43a047" transform="rotate(30 38 30)"/>
+      <ellipse cx="47" cy="28" rx="3.5" ry="1.8" fill="#43a047" transform="rotate(-30 47 28)"/>
+      <ellipse cx="49" cy="32" rx="3.5" ry="1.8" fill="#43a047" transform="rotate(30 49 32)"/>
+      <!-- Flowers -->
+      <!-- Pink -->
+      <circle cx="14" cy="26" r="4" fill="#ec407a"/>
+      <circle cx="14" cy="26" r="1.6" fill="#fff59d"/>
+      <!-- Yellow -->
+      <circle cx="24" cy="18" r="4" fill="#fdd835"/>
+      <circle cx="24" cy="18" r="1.6" fill="#e65100"/>
+      <!-- Purple -->
+      <circle cx="34" cy="22" r="4" fill="#8e24aa"/>
+      <circle cx="34" cy="22" r="1.6" fill="#fff59d"/>
+      <!-- Orange -->
+      <circle cx="44" cy="16" r="4" fill="#fb8c00"/>
+      <circle cx="44" cy="16" r="1.6" fill="#fff59d"/>
+      <!-- White -->
+      <circle cx="52" cy="24" r="4" fill="#fafafa"/>
+      <circle cx="52" cy="24" r="1.6" fill="#fdd835"/>
+    </symbol>
+
+  </defs>
+</svg>
 
 
 <!-- ============================================================

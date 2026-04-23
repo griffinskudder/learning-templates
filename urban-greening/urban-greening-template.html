@@ -492,7 +492,41 @@
 
 <footer>Urban Greening Template | no internet required</footer>
 
-<!-- JavaScript is added in a later task -->
+<!-- ============================================================
+     JAVASCRIPT (minimal — do not edit unless confident)
+
+     Logic:
+       • Clicking a .pin-btn adds "active" to its matching popup
+       • Clicking a .close-btn or clicking outside a popup removes "active"
+       • Only one popup is open at a time
+     ============================================================ -->
+<script>
+  var buttons = document.querySelectorAll('.pin-btn');
+  var popups  = document.querySelectorAll('.popup');
+
+  function closeAll() {
+    popups.forEach(function(p) { p.classList.remove('active'); });
+  }
+
+  buttons.forEach(function(btn) {
+    btn.addEventListener('click', function(e) {
+      e.stopPropagation();
+      var target = document.getElementById(btn.dataset.popup);
+      var isOpen = target.classList.contains('active');
+      closeAll();
+      if (!isOpen) target.classList.add('active');
+    });
+  });
+
+  document.querySelectorAll('.close-btn').forEach(function(cb) {
+    cb.addEventListener('click', function(e) {
+      e.stopPropagation();
+      closeAll();
+    });
+  });
+
+  document.addEventListener('click', closeAll);
+</script>
 
 </body>
 </html>

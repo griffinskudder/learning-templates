@@ -10,6 +10,7 @@ A collection of self-contained HTML learning activities for high school students
 |---|---|---|
 | [Interactive Image](interactive-image/) | An annotated image with clickable pin buttons that open popup descriptions | ~30 min |
 | [Interactive Map](interactive-map/) | A world map with clickable location markers and popup facts | ~30 min |
+| [Urban Greening](urban-greening/) | An annotated image with detailed SVG icon pins (bug, tree, beehive, garden) that open popup descriptions, themed around adding nature to urban spaces | ~30 min |
 | [Multiple Choice Quiz](multiple-choice-quiz/) | A self-marking quiz with four-option questions and instant feedback | ~30 min |
 | [True or False Checker](true-or-false-checker/) | A set of statements students mark as true or false, with correct/incorrect feedback | ~20 min |
 | [Fill in the Blank](fill-in-the-blank/) | Sentences with missing words — students type answers and check their score | ~20 min |
@@ -35,6 +36,7 @@ Each template includes a completed example in its `examples/` folder based on a 
 |---|---|---|
 | [Interactive Image](interactive-image/examples/parts-of-a-city.html) | `parts-of-a-city.html` | 5 clickable pins on a city diagram: City Centre, Suburbs, Factories, Parks, Transport |
 | [Interactive Map](interactive-map/examples/cities-australia-usa.html) | `cities-australia-usa.html` | Markers on Sydney, Melbourne, Brisbane, New York, and Los Angeles |
+| [Urban Greening](urban-greening/examples/greening-a-city-block.html) | `greening-a-city-block.html` | 4 interventions on a city block: community garden on a vacant lot, a street tree, a rooftop beehive, and an insect hotel |
 | [Multiple Choice Quiz](multiple-choice-quiz/examples/urbanisation-quiz.html) | `urbanisation-quiz.html` | 5 questions covering key urbanisation concepts |
 | [True or False Checker](true-or-false-checker/examples/urbanisation-true-false.html) | `urbanisation-true-false.html` | 5 statements about urbanisation with explanations |
 | [Fill in the Blank](fill-in-the-blank/examples/urbanisation-facts.html) | `urbanisation-facts.html` | 5 sentences about cities, jobs, pollution, and the Australian coast |

@@ -24,6 +24,7 @@ This is a collection of standalone HTML learning templates designed for students
 - **order-the-timeline**: Drag-and-drop chronological ordering activity
 - **sorting-activity**: Drag-and-drop sorting into categories (e.g. causes vs effects)
 - **true-or-false-checker**: Self-marking true/false statement activity
+- **urban-greening**: Interactive-image variant with realistic SVG icon pins (bug, tree, beehive, garden) themed around adding nature to urban spaces
 - **vocabulary-builder**: Definition-matching vocabulary learning activity
 
 ## Adding a New Template
